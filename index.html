@@ -58,9 +58,21 @@
                         <button type="button" id="checkbalance" class="btn btn-warning ms-2 rounded-pill btn-load">Load</button>
                     </div>
                 </div>
-                <div class="d-flex flex-column mb-2">
-                    <p class="m-0"><span class="s pointer font-family-size-medium"><span id="helios" class="qt">0</span> <span class="sym">HELIOS</span></span></p>
-                    <p class="m-0"><span class="pointer font-family-size-medium">$ <span id="helios_bal_value" class="qt">0</span></span></p>
+                <div class="d-flex mb-2">
+                    <div class="wallet-div-one">
+                        <p class="m-0"><span class="pointer font-family-size-medium"><span id="helios" class="qt qty-color">0</span> <span class="sym">HELIOS</span></span></p>
+                    </div>
+                    <div class="wallet-div-two">
+                        <p class="m-0"><span class="pointer font-family-size-small-medium">$<span id="helios_bal_value" class="qt qty-color">0</span></span></p>
+                    </div>
+                </div>
+                <div class="d-flex mb-2">
+                    <div class="wallet-div-one">
+                        <p class="m-0"><span class="pointer font-family-size-medium"><span id="athon" class="qt qty-color">0</span> <span class="sym">ATH</span></span></p>
+                    </div>
+                    <div class="wallet-div-two">
+                        <p class="m-0"><span class="pointer font-family-size-small-medium">$<span id="athon_bal_value" class="qt qty-color">0</span></span></p>
+                    </div>
                 </div>
                 <hr>
                 <div class="d-flex mb-2">
@@ -97,15 +109,14 @@
                 <div class="d-flex mb-2 align-items-center">                         
                     <div class="d-flex flex-column box f gradient-style burn">
                         <a class="link-light link-button  link-button-div-align" href="https://acc.helios.surf/" target="_blank">
-                            <span class="font-family-size-small-medium link-button-align link-button-font">CREATE ACCOUNTS&nbsp;</span>
+                            <span class="font-family-size-small-medium link-button-align link-button-font">HELIOS CREATE ACCOUNTS&nbsp;</span>
                             <svg class="link-button-align" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-up-right" viewBox="0 0 16 16">
                                 <path fill-rule="evenodd" d="M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5z"/>
                                 <path fill-rule="evenodd" d="M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0v-5z"/>
                             </svg>
                         </a>
                     </div>                     
-                </div>
-                         
+                </div>                        
 
                     <!--
                     <div class="d-flex flex-column box f">
@@ -275,7 +286,7 @@
 
         <div class="d-flex flex-column rounded-3 bg p-0 m-3 mt-0 card column-three-size">
             <div class="m-3">
-                <p class="font-family-size-medium-large mb-3">
+                <p class="font-family-size-medium-large mb-2">
                     <span class="market-style">Market Detail</span>
                     <button type="button" id="refresh" class="col btn-sm btn-info ms-2 rounded-pill">Refresh</button>
                 </p>
@@ -326,12 +337,12 @@
         </div>
     </div>
 
-    <div id="historycard" class="mbody mt-0 d-none justify-content-center">
+    <div id="surfhistorycard" class="mbody mt-0 d-none justify-content-center">
         <div class="d-flex flex-column rounded-3 bg p-0 m-3 mt-0 card w-100">
             <div class="m-3">
                 <div class="d-flex align-items-center mb-2">
-                    <p class="font-family-size-medium-large m-0">Vote History</p>
-                    <button type="button" id="refreshHistory" class="col1 btn-sm btn-danger ms-3 rounded-pill">Refresh</button>
+                    <p class="font-family-size-medium-large m-0">Surf Vote History</p>
+                    <button type="button" id="refreshSurfHistory" class="col1 btn-sm btn-danger ms-3 rounded-pill">Refresh</button>
                 </div>
                 <div class="tb-div">
                     <table class="htable">
@@ -344,7 +355,59 @@
                                 <th></th>
                             </tr>
                         </thead>
-                        <tbody id="history">
+                        <tbody id="surfhistory">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="beehistorycard" class="mbody mt-0 d-none justify-content-center">
+        <div class="d-flex flex-column rounded-3 bg p-0 m-3 mt-0 card w-100">
+            <div class="m-3">
+                <div class="d-flex align-items-center mb-2">
+                    <p class="font-family-size-medium-large m-0">Bee Vote History</p>
+                    <button type="button" id="refreshBeeHistory" class="col1 btn-sm btn-danger ms-3 rounded-pill">Refresh</button>
+                </div>
+                <div class="tb-div">
+                    <table class="htable">
+                        <thead>
+                            <tr>
+                                <th>AUTHOR</th>
+                                <th>PERMLINK</th>
+                                <th>WEIGHT</th>
+                                <th>TIME</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="beehistory">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="pobhistorycard" class="mbody mt-0 d-none justify-content-center">
+        <div class="d-flex flex-column rounded-3 bg p-0 m-3 mt-0 card w-100">
+            <div class="m-3">
+                <div class="d-flex align-items-center mb-2">
+                    <p class="font-family-size-medium-large m-0">Pob Vote History</p>
+                    <button type="button" id="refreshPobHistory" class="col1 btn-sm btn-danger ms-3 rounded-pill">Refresh</button>
+                </div>
+                <div class="tb-div">
+                    <table class="htable">
+                        <thead>
+                            <tr>
+                                <th>AUTHOR</th>
+                                <th>PERMLINK</th>
+                                <th>WEIGHT</th>
+                                <th>TIME</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="pobhistory">
                         </tbody>
                     </table>
                 </div>
@@ -354,7 +417,8 @@
     
     <div class="bottom-bar">
         <div class="developed-by-container font-family-size-small-medium">
-            <p>Developed by <a class="alih-color" href="https://peakd.com/@ali-h" target="_blank">@ali-h</a> & <a class="theguruasia-color" href="https://peakd.com/@theguruasia" target="_blank">@theguruasia</a></p>
+            <!--<p>Developed by <a class="alih-color" href="https://peakd.com/@ali-h" target="_blank">@ali-h</a> & <a class="theguruasia-color" href="https://peakd.com/@theguruasia" target="_blank">@theguruasia</a></p>-->
+            <p>Developed by <a class="alih-color" href="https://peakd.com/@helios.voter/posts" target="_blank">Team HELIOS</a></p>
         </div>  
         <div class="popup-by-container-hive font-family-size-small-medium">
             <div>
