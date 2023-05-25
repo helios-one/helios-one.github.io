@@ -260,7 +260,7 @@ a {
     background-color: #FDBB52 !important;
     border-color: #FDBB52 !important;
     transition: background-color 1.0s ease-in-out !important;
-    font-size: 16px !important;
+    font-size: 14px !important;
     color: #000000 !important;
     font-weight: 500 !important;
     border-radius: 15px !important;
@@ -274,7 +274,7 @@ a {
     background-color: #ffae00 !important;
     border-color: #ffae00 !important;    
     transition: background-color 1.0s ease-in-out !important;
-    font-size: 16px !important;
+    font-size: 14px !important;
     color: #000000 !important;
     font-weight: 500 !important;
 }
@@ -507,43 +507,115 @@ a {
   
 @media (max-width: 768px) {
     .bottom-bar {
-      flex-direction: column;
-      align-items: center;
+        flex-direction: column;
+        align-items: center;
     }
     .popup-by-container-hive,
     .popup-by-container-engine {
-      flex-basis: 100%;
-      text-align: center;
+        flex-basis: 100%;
+        text-align: center;
     }
     .developed-by-container {
-      text-align: center;
-      flex-basis: 100%;
+        text-align: center;
+        flex-basis: 100%;
     }
 }
   
 @media (min-width: 768px) {
     .bottom-bar {
-      flex-wrap: nowrap;
+        flex-wrap: nowrap;
     }
     .popup-by-container-hive {
-      flex-basis: auto;
-      text-align: right;
-      margin-left: auto; /* Added to align near the popup-by-container-engine */
-      margin-right: 10px;
+        flex-basis: auto;
+        text-align: right;
+        margin-left: auto; /* Added to align near the popup-by-container-engine */
+        margin-right: 10px;
     }
     .popup-by-container-engine {
-      flex-basis: auto;
-      text-align: left;
-      margin-right: 10px;
+        flex-basis: auto;
+        text-align: left;
+        margin-right: 10px;
     }
     .developed-by-container {
-      text-align: left;
-      flex-basis: auto;
-      padding-left: 10px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+        text-align: left;
+        flex-basis: auto;
+        padding-left: 10px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
+}
+
+@media (max-width: 517px) {
+    .service-container-surf {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: flex-start;
+    }
+
+    .div-one-width,
+    .div-two-width,
+    .div-three-width,
+    .div-four-width,
+    .div-five-width {
+        flex-basis: auto;
+        width: auto;
+    }
+}
+
+@media (min-width: 517px) and (max-width: 580px) {
+    .service-container-surf {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: flex-start;
+    }
+    
+    .div-one-width {
+        flex-grow: 1;
+        text-align: left;
+        padding-right: 10px;
+    }
+
+    .div-two-width,
+    .div-three-width,
+    .div-four-width,
+    .div-five-width {
+        flex-grow: 1;
+        text-align: right;
+        padding-left: 10px;
+    }
+
+    .div-one-width {
+        width: 18%;
+    }
+
+    .div-two-width {
+        width: 18%;
+    }
+
+    .div-three-width {
+        width: 49%;
+    }
+
+    .div-four-width {
+        width: 10%;
+    }
+
+    .div-five-width {
+        width: 5%;
+    }
+
+    .avail-style {
+        font-size: 14px;
+    }
+}
+
+
+
+.service-container-surf {
+    width: 100%;
 }
   
 .developed-by-container p {
@@ -618,14 +690,16 @@ a {
     right: 5px;
     cursor: pointer;
     border: none;
-    fill: #5f5f5f;
+    fill: #000000;
     transition: fill 0.3s ease;
 }
 
+/*
 #close-button-hive:hover .close-button-color path {
     fill: #000000;
     transition: fill 0.3s ease;
 }
+*/
   
 .popup-container-text {
     text-align: center;
@@ -685,14 +759,16 @@ a {
     right: 5px;
     cursor: pointer;
     border: none;    
-    fill: #5f5f5f;
+    fill: #000000;
     transition: fill 0.3s ease;
 }
 
+/*
 #close-button-engine:hover .close-button-color path {
     fill: #000000;
     transition: fill 0.3s ease;
 }
+*/
   
 #api-list-engine {
     width: 100%; /* Make the table fill the available space */
