@@ -25,6 +25,8 @@ $(window).bind("load", function() {
     ];
 
     let ssc;
+
+    var hivePriceAPI = "https://api.coingecko.com/api/v3/simple/price?ids=hive&vs_currencies=usd";
     
     async function checkHiveNodeStatus(nodeUrl, statusElement) {
         try 
@@ -318,12 +320,11 @@ $(window).bind("load", function() {
     // remove unnessary parameters from url
     window.history.replaceState({}, document.title, "/" + "");
 
-    var user = null, bal = { HELIOS: 0, VALUE: 0 }, marketvalues;
+    var user = null;
+    var MARKETVALUES;
 
-    const min = {
-        HELIOS: 5,
-        ATHON: 10
-    };
+    const MINHELIOS = 5;
+    const MINATH = 5;
 
     async function processAll () {
         //getBridge();
@@ -415,21 +416,7 @@ $(window).bind("load", function() {
         {
             console.log("Error at getSurfHistory() : ", );
         }
-    };   
-
-    // on clicke refresh history button
-    $("#refreshSurfHistory").click(() => {
-        // Empty history table with a fade-out effect
-        $("#surfhistory").fadeOut(200, function() {
-            $(this).empty();
-            // Set a small timeout before executing getSurfHistory()
-            setTimeout(() => {
-                getSurfHistory();
-                // Fade-in the history table after the data is loaded
-                $("#surfhistory").fadeIn(200);
-            }, 500); // Adjust the timeout value (in milliseconds) as needed
-        });
-    });
+    };
 
     async function getBeeHistory () {
         try
@@ -491,21 +478,7 @@ $(window).bind("load", function() {
         {
             console.log("Error at getBeeHistory() : ", );
         }
-    };   
-
-    // on clicke refresh history button
-    $("#refreshBeeHistory").click(() => {
-        // Empty history table with a fade-out effect
-        $("#beehistory").fadeOut(200, function() {
-            $(this).empty();
-            // Set a small timeout before executing getBeeHistory()
-            setTimeout(() => {
-                getBeeHistory();
-                // Fade-in the history table after the data is loaded
-                $("#beehistory").fadeIn(200);
-            }, 500); // Adjust the timeout value (in milliseconds) as needed
-        });
-    });
+    };    
 
     async function getPobHistory () {
         try
@@ -567,26 +540,14 @@ $(window).bind("load", function() {
         {
             console.log("Error at getPobHistory() : ", );
         }
-    };   
-
-    // on clicke refresh history button
-    $("#refreshPobHistory").click(() => {
-        // Empty history table with a fade-out effect
-        $("#pobhistory").fadeOut(200, function() {
-            $(this).empty();
-            // Set a small timeout before executing getBeeHistory()
-            setTimeout(() => {
-                getPobHistory();
-                // Fade-in the history table after the data is loaded
-                $("#pobhistory").fadeIn(200);
-            }, 500); // Adjust the timeout value (in milliseconds) as needed
-        });
-    });
+    };    
 
     $(document).ready(function() { 
+        clickFunctions();
         refresh(); 
         loadHiveNode();
         loadEngineNode();
+        actionTriggers();
     });
 
     async function loadHiveNode() {
@@ -796,195 +757,389 @@ $(window).bind("load", function() {
     };
 
     async function getHeliosBalances (account) {
+        var heliosJson = [];
         try
         {
             const res = await hive.api.getAccountsAsync([account]);
             if (res.length > 0) 
             {
-                const res2 = await ssc.find("tokens", "balances", { account, symbol: "HELIOS" }, 1000, 0, []);
-                var helios = res2.find(el => el.symbol === "HELIOS");
-                if (res2.length > 0) 
+                const balHelios = await getTokenBalance(account, "HELIOS");
+                const marketHelios = await getMarketInfo(["HELIOS"]);                
+                var hiveUSD = await getHiveUSD();                                
+                
+                if (balHelios.length > 0 && marketHelios.length > 0 && hiveUSD > 0) 
                 {
-                    var val = (parseFloat(helios.balance) * parseFloat(marketvalues.HELIOS.lastPrice)) * parseFloat(marketvalues.HIVE);
-                    return {
-                        HELIOS: dec(parseFloat((helios) ? helios.balance : 0)),
-                        VALUE: parseFloat(val).toFixed(3)
+                    var val = (parseFloat(balHelios[0].balance) * parseFloat(marketHelios[0].lastPrice)) * parseFloat(hiveUSD);
+                    
+                    var ddata = {
+                        "heliosVal" : dec(balHelios[0].balance),
+                        "hiveVal" :  parseFloat(val).toFixed(3)
                     }
+                    heliosJson.push(ddata);
+                    return heliosJson;
                 } 
                 else 
-                { 
-                    return { HELIOS: 0, VALUE: 0 };
+                {
+                    var ddata = {
+                        "heliosVal" : 0.0,
+                        "hiveVal" :  0.0
+                    } 
+                    heliosJson.push(ddata);
+                    return heliosJson;
                 }
             } 
             else 
             {
-                return { HELIOS: 0, VALUE: 0 };
+                var ddata = {
+                    "heliosVal" : 0.0,
+                    "hiveVal" :  0.0
+                } 
+                heliosJson.push(ddata);
+                return heliosJson;
             }
         }
         catch (error)
         {
             console.log("Error at getHeliosBalances() : ", error);
+            var ddata = {
+                "heliosVal" : 0.0,
+                "hiveVal" :  0.0
+            } 
+            heliosJson.push(ddata);
+            return heliosJson;
         }
     };
 
     async function getAthonBalances (account) {
+        var athonJson = [];
         try
         {
             const res = await hive.api.getAccountsAsync([account]);
             if (res.length > 0) 
             {
-                const res2 = await ssc.find("tokens", "balances", { account, symbol: "ATH" }, 1000, 0, []);
-                var athon = res2.find(el => el.symbol === "ATH");
-                if (res2.length > 0) 
+                const balAthon = await getTokenBalance(account, "ATH");
+                const marketAthon = await getMarketInfo(["ATH"]);
+                var hiveUSD = await getHiveUSD();                                
+                
+                if (balAthon.length > 0 && marketAthon.length > 0 && hiveUSD > 0) 
                 {
-                    var val = (parseFloat(athon.balance) * parseFloat(marketvalues.ATH.lastPrice)) * parseFloat(marketvalues.HIVE);
-                    return {
-                        ATH: dec(parseFloat((athon) ? athon.balance : 0)),
-                        VALUE: parseFloat(val).toFixed(3)
+                    var val = (parseFloat(balAthon[0].balance) * parseFloat(marketAthon[0].lastPrice)) * parseFloat(hiveUSD);
+                    
+                    var ddata = {
+                        "athonVal" : dec(balAthon[0].balance),
+                        "hiveVal" :  parseFloat(val).toFixed(3)
                     }
+                    athonJson.push(ddata);
+                    return athonJson;
                 } 
                 else 
-                { 
-                    return { ATH: 0, VALUE: 0 };
+                {
+                    var ddata = {
+                        "athonVal" : 0.0,
+                        "hiveVal" :  0.0
+                    } 
+                    athonJson.push(ddata);
+                    return athonJson;
                 }
             } 
             else 
             {
-                return { ATH: 0, VALUE: 0 };
+                var ddata = {
+                    "athonVal" : 0.0,
+                    "hiveVal" :  0.0
+                } 
+                athonJson.push(ddata);
+                return athonJson;
             }
         }
         catch (error)
         {
             console.log("Error at getAthonBalances() : ", error);
+            var ddata = {
+                "athonVal" : 0.0,
+                "hiveVal" :  0.0
+            } 
+            athonJson.push(ddata);
+            return athonJson;
+        }
+    };   
+
+    async function getTokenBalance (account, symbol) {
+        var tokenJson = [];
+        try
+        {
+            tokenJson = await ssc.find("tokens", "balances", { account, symbol: symbol }, 1000, 0, []);
+            return tokenJson;
+        }
+        catch (error)
+        {
+            console.log("Error at getTokenBalance() : ", error);
+            return tokenJson;
         }
     };
 
-    async function getMarket (symbols) {
+    async function getMarketInfo (symbols) {
+        var marketJson = [];
         try
-        {
-            const res = await ssc.find("market", "metrics", { symbol: { "$in": [...symbols] } }, 1000, 0, []);
-            const { data } = await axios.get("https://api.coingecko.com/api/v3/simple/price?ids=hive&vs_currencies=usd");
-            var HELIOS = res.find(el => el.symbol === "HELIOS");
-            var ATHON = res.find(el => el.symbol === "ATH");            
-            return {
-                    HIVE: data.hive.usd,
-                    HELIOS,
-                    ATHON
-            }
+        {           
+            marketJson = await ssc.find("market", "metrics", { symbol: { "$in": [...symbols] } }, 1000, 0, []);            
+            return marketJson;
         }
         catch (error)
         {
             console.log("Error at getMarket() : ", error);
+            return marketJson;
+        }
+    };
+
+    async function getHiveUSD () {
+        var hiveUSD = 0;
+        try
+        {
+            const { data } = await axios.get(hivePriceAPI);
+            hiveUSD = data.hive.usd;
+            return hiveUSD;
+        }
+        catch (error)
+        {
+            console.log("Error at getHiveUSD() : ", error);
+            return hiveUSD;
+        }
+    };
+
+    async function clickFunctions () {
+        try
+        {
+            $("#refresh").click(async function () {
+                $(this).attr("disabled", true);
+                await refresh();
+                $(this).removeAttr("disabled");
+            });
+
+            $("#refreshSurfHistory").click(() => {
+                // Empty history table with a fade-out effect
+                $("#surfhistory").fadeOut(200, function() {
+                    $(this).empty();
+                    // Set a small timeout before executing getSurfHistory()
+                    setTimeout(() => {
+                        getSurfHistory();
+                        // Fade-in the history table after the data is loaded
+                        $("#surfhistory").fadeIn(200);
+                    }, 500); // Adjust the timeout value (in milliseconds) as needed
+                });
+            });
+
+            $("#refreshPobHistory").click(() => {
+                // Empty history table with a fade-out effect
+                $("#pobhistory").fadeOut(200, function() {
+                    $(this).empty();
+                    // Set a small timeout before executing getBeeHistory()
+                    setTimeout(() => {
+                        getPobHistory();
+                        // Fade-in the history table after the data is loaded
+                        $("#pobhistory").fadeIn(200);
+                    }, 500); // Adjust the timeout value (in milliseconds) as needed
+                });
+            });
+
+            $("#refreshBeeHistory").click(() => {
+                // Empty history table with a fade-out effect
+                $("#beehistory").fadeOut(200, function() {
+                    $(this).empty();
+                    // Set a small timeout before executing getBeeHistory()
+                    setTimeout(() => {
+                        getBeeHistory();
+                        // Fade-in the history table after the data is loaded
+                        $("#beehistory").fadeIn(200);
+                    }, 500); // Adjust the timeout value (in milliseconds) as needed
+                });
+            });
+
+            $("#checkbalance").click(async function() {
+                try
+                {
+                    user = $.trim($("#username").val().toLowerCase());
+                    if (user.length >= 3) {
+                        $(this).attr("disabled", "true");
+                        await updateBalance();
+                        $(this).removeAttr("disabled");
+                        localStorage['user'] = user;
+                    }
+                }
+                catch (error)
+                {
+                    console.log("Error at checkbalance-Click : ", error);
+                }
+            });
+        
+        }
+        catch (error)
+        {
+            console.log("Error at clickFunctions() : ", error);
         }
     };
 
     async function refresh () {
         try
         {
-            marketvalues = await getMarket(["HELIOS", "ATH"]);            
-            var helios_price = parseFloat(marketvalues.HELIOS.lastPrice) || 0.0;
-            var helios_value = parseFloat(marketvalues.HELIOS.lastPrice * marketvalues.HIVE) || 0.0;
-            var helios_vol = parseFloat(marketvalues.HELIOS.volume * marketvalues.HIVE) || 0.0;
-            var helios_change = parseFloat(marketvalues.HELIOS.priceChangePercent) || 0.0;
+            var marketInfo = await getMarketInfo(["HELIOS", "ATH"]);
+            var hiveUSD = await getHiveUSD();            
+            if(marketInfo.length > 0)
+            {
+                var helios_price = 0.0, helios_value = 0.0, helios_vol = 0.0, helios_change = 0.0;            
+                if(marketInfo[0].symbol == "HELIOS")
+                {
+                    helios_price = parseFloat(marketInfo[0].lastPrice) || 0.0;
+                    helios_value = parseFloat(marketInfo[0].lastPrice * hiveUSD) || 0.0;
+                    helios_vol = parseFloat(marketInfo[0].volume * hiveUSD) || 0.0;
+                    helios_change = parseFloat(marketInfo[0].priceChangePercent) || 0.0;
+                }
 
-            var athon_price = parseFloat(marketvalues.ATHON.lastPrice) || 0.0;
-            var athon_value = parseFloat(marketvalues.ATHON.lastPrice * marketvalues.HIVE) || 0.0;
-            var athon_vol = parseFloat(marketvalues.ATHON.volume * marketvalues.HIVE) || 0.0;
-            var athon_change = parseFloat(marketvalues.ATHON.priceChangePercent) || 0.0;
+                var athon_price = 0.0, athon_value = 0.0, athon_vol = 0.0, athon_change = 0.0;            
+                if(marketInfo[0].symbol == "ATH")
+                {
+                    athon_price = parseFloat(marketInfo[1].lastPrice) || 0.0;
+                    athon_value = parseFloat(marketInfo[1].lastPrice * hiveUSD) || 0.0;
+                    athon_vol = parseFloat(marketInfo[1].volume * hiveUSD) || 0.0;
+                    athon_change = parseFloat(marketInfo[1].priceChangePercent) || 0.0;
+                }
 
-            $("#helios_price").text(helios_price.toFixed(3));
-            $("#helios_value").text(helios_value.toFixed(3));
-            $("#helios_vol").text(helios_vol.toFixed(3));
-            $("#helios_change").text(helios_change.toFixed(3));
-            $("#athon_price").text(athon_price.toFixed(3));
-            $("#athon_value").text(athon_value.toFixed(3));
-            $("#athon_vol").text(athon_vol.toFixed(3));
-            $("#athon_change").text(athon_change.toFixed(3));
+                $("#helios_price").text(helios_price.toFixed(3));
+                $("#helios_value").text(helios_value.toFixed(3));
+                $("#helios_vol").text(helios_vol.toFixed(3));
+                $("#helios_change").text(helios_change.toFixed(3));
+                $("#athon_price").text(athon_price.toFixed(3));
+                $("#athon_value").text(athon_value.toFixed(3));
+                $("#athon_vol").text(athon_vol.toFixed(3));
+                $("#athon_change").text(athon_change.toFixed(3));
+            }
+            else
+            {
+                $("#helios_price").text("0.000");
+                $("#helios_value").text("0.000");
+                $("#helios_vol").text("0.000");
+                $("#helios_change").text("0.000");
+                $("#athon_price").text("0.000");
+                $("#athon_value").text("0.000");
+                $("#athon_vol").text("0.000");
+                $("#athon_change").text("0.000");
+            }
         }
         catch (error)
         {
             console.log("Error At refresh() : ", error);
+
+            $("#helios_price").text("0.000");
+            $("#helios_value").text("0.000");
+            $("#helios_vol").text("0.000");
+            $("#helios_change").text("0.000");
+            $("#athon_price").text("0.000");
+            $("#athon_value").text("0.000");
+            $("#athon_vol").text("0.000");
+            $("#athon_change").text("0.000");
         }
     };
 
-    $("#refresh").click(async function () {
+    async function actionTriggers () {
+        try
+        {
+            const postLinkField = document.getElementById("postlink");
+            postLinkField.addEventListener("input", async function() {
+                await postURL(postLinkField.value);
+            });
+        }
+        catch (error)
+        {
+            console.log("Error at actionTriggers() : ", error);
+        }
+    };
+    
+    async function postURL (post_link) {
+        try
+        {            
+            console.log("post_link : ", post_link);
+            const author = post_link.split("@")[1].split("/")[0];
+            const link = post_link.split("@")[1].split("/")[1];
+            var postData = await hive.api.getContentAsync(author, link);
+            if(postData != null || Object.keys(postData).length !== 0)
+            {
+                console.log("HERE postData : ", postData);
+            }
+            else
+            {
+                console.log("HERE NO postData : ", postData);
+            }
+           
+            var beeTagStatus = await checkBeeTags(postData);
+            if(beeTagStatus == true)
+            {
 
-        $(this).attr("disabled", true);
+            }
+            
+        }
+        catch (error)
+        {
+            console.log("Error at postURL() : ", error);
+        }
+    };
 
-        await refresh();
-
-        $(this).removeAttr("disabled");
-
-    });
+    async function checkBeeTags (postData) {
+        var validStatus = false;
+        try
+        {
+            const json_metadata = JSON.parse(postData.json_metadata);
+            console.log(json_metadata);
+            if (json_metadata.tags.includes("tribes") || json_metadata.tags.includes("hive-engine")) 
+            {                
+                validStatus = true;
+            }
+            return validStatus;
+        }
+        catch (error)
+        {
+            console.log("Error at checkBeeTags() : ", error);
+            return validStatus;
+        }
+    };
 
     async function updateBurn(r) {
-
-        try {
-
+        try 
+        {
             const symbol = $("#input").val();
-
             const val = $("#inputquantity").val();
-
             const post_link = $("#post").val();
 
-
-
             const {
-
                 lastPrice,
-
                 lastDayPrice
-
             } = marketvalues[symbol];
 
             let es_val = (parseFloat(lastPrice) + parseFloat(lastDayPrice)) / 2;
-
             es_val *= marketvalues.HIVE;
-
             es_val *= val;
-
             es_val = dec(es_val);
 
             $("#es_val").text(`$ ${es_val}`);
-
-
-
             function isMin(val) {
-
                 if (val >= min[symbol]) return true;
-
                 else return false;
-
             }
 
-
-
-            if (isMin(val)
-
-                && bal[symbol] >= val
-
-                && post_link.length > 0
-
-                ) {
-
+            if (isMin(val) && bal[symbol] >= val && post_link.length > 0) 
+            {
                 $("#swap").removeAttr("disabled");
-
                 if (r) r(true, parseFloat(val).toFixed(3), symbol, post_link);
-
-            } else {
-
+            } 
+            else 
+            {
                 $("#swap").attr("disabled", "true");
-
                 if (r) r(false, 0, 0, comment);
-
             }
-
-        } catch (e) {
-
-            console.log(e);
-
+        } 
+        catch (error) 
+        {
+            console.log("Error at updateBurn() : ", error);
         }
-
     };
 
     $(".s").click(function () {
@@ -1004,62 +1159,34 @@ $(window).bind("load", function() {
     $("#post").keyup(() => { updateBurn(); });
 
     async function updateBalance() {        
-        balHelios = await getHeliosBalances(user);        
-        $("#helios").text(balHelios.HELIOS.toFixed(3));
-        $("#helios_bal_value").text(balHelios.VALUE);
-        balAthon = await getAthonBalances(user);        
-        $("#athon").text(balAthon.ATH.toFixed(3));
-        $("#athon_bal_value").text(balAthon.VALUE);
+        var balHelios = await getHeliosBalances(user);               
+        $("#helios").text(balHelios[0].heliosVal.toFixed(3));
+        $("#helios_bal_value").text(balHelios[0].hiveVal);
+        var balAthon = await getAthonBalances(user);        
+        $("#athon").text(balAthon[0].athonVal.toFixed(3));
+        $("#athon_bal_value").text(balAthon[0].hiveVal);
     };
-
-    $("#checkbalance").click(async function() {
-
-        user = $.trim($("#username").val().toLowerCase());
-
-        if (user.length >= 3) {
-
-            $(this).attr("disabled", "true");
-
-            await updateBalance();
-
-            updateBurn();
-
-            $(this).removeAttr("disabled");
-
-            localStorage['user'] = user;
-
-        }
-
-    });
 
     if (localStorage['user']) {
-
         $("#username").val(localStorage['user']);
-
         user = localStorage['user'];
-
         updateBalance();
-
     };
 
-    function isValid (post) {
-
+    async function isValid (post) {
         const valid_diffence = 18 * 60 * 60 * 1000;
-
         const { created } = post;
-
         const created_timestamp = new Date(created).getTime();
-
         const current_timestamp = new Date().getTime();
-
         const diff = current_timestamp - created_timestamp;
-
-
-
-        if (diff > valid_diffence) return false;
-
-        else return true;
-
+        if (diff > valid_diffence) 
+        {
+            return false;
+        }
+        else 
+        {
+            return true;
+        }
     };
 
     $("#swap").click(async function () {
