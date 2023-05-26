@@ -1052,11 +1052,19 @@ $(window).bind("load", function() {
             const buttonAddSurfAvail = document.getElementById("add-surf-avail");
             const surfAddSvg = document.getElementById("surf-add-svg");
 
+            const beeSvg = document.getElementById("bee-svg");
+            const beeAvail = document.getElementById("bee-avail");
+            const inputBeeAvail = document.getElementById("input-bee-avail");
+            const buttonBeeAvail = document.getElementById("button-bee-avail");
+            const buttonAddBeeAvail = document.getElementById("add-bee-avail");
+            const beeAddSvg = document.getElementById("bee-add-svg");
+
             postLinkField.addEventListener("input", async function() {
                 try
                 {
-                    var postInfo = await postURL(postLinkField.value);
+                    var postInfo = await postURL(postLinkField.value);                    
                     await surfValidPost(postInfo[0]);
+                    await beeValidPost(postInfo[0]);
                 }
                 catch (error)
                 {
@@ -1230,6 +1238,173 @@ $(window).bind("load", function() {
             };
 
             // Surf Validations End Here
+
+            // Bee Validations Start Here
+
+            inputBeeAvail.addEventListener("input", async function() {
+                try
+                {
+                    var inputVal = inputBeeAvail.value;
+                    await validateBeePattern(inputVal);
+                    
+                    inputVal = parseFloat(inputVal) || 0.0;
+                    await addBeeButton(inputVal, buttonAddBeeAvail, beeAddSvg);
+                }
+                catch (error)
+                {
+                    console.log("Error at inputBeeAvail.addEventListener() - input : ", error);
+                }
+            });
+
+            buttonBeeAvail.addEventListener("change", async function() {
+                try
+                {
+                    var inputVal = inputBeeAvail.value;
+                    var selectedOption = buttonBeeAvail.value;
+                    await selectBeeSymbol(inputVal, selectedOption, buttonAddBeeAvail, beeAddSvg);
+                }
+                catch (error)
+                {
+                    console.log("Error at buttonBeeAvail.addEventListener() - change : ", error);
+                }
+            });
+
+            buttonAddBeeAvail.addEventListener("click", function() {
+                try
+                {
+                    beeAddSvg.style.fill = "#00e065";
+                    buttonAddBeeAvail.setAttribute("disabled", "disabled");
+                }
+                catch (error)
+                {
+                    console.log("Error at buttonAddBeeAvail.addEventListener() - click : ", error);
+                }
+            });
+
+            async function beeValidPost (postInfo) {
+                try
+                {
+                    if(postInfo.beeStatus == true)
+                    {
+                        beeSvg.style.fill = "#00e065";
+                        beeAvail.style.color = "#00e065";
+                        inputBeeAvail.removeAttribute("disabled");
+                        buttonBeeAvail.removeAttribute("disabled");
+                    }
+                    else
+                    {
+                        beeSvg.removeAttribute("style");
+                        beeAvail.removeAttribute("style");
+                        inputBeeAvail.value = "";  // Remove the text value
+                        inputBeeAvail.setAttribute("disabled", "disabled");
+                        buttonBeeAvail.value = "HELIOS";
+                        buttonBeeAvail.setAttribute("disabled", "disabled");
+                        buttonAddBeeAvail.setAttribute("disabled", "disabled");
+                        beeAddSvg.removeAttribute("style"); 
+                    }
+                }
+                catch (error)
+                {
+                    console.log("Error at beeValidPost() : ", error);
+                }
+            };
+
+            async function validateBeePattern (price) {
+                try
+                {
+                    var patt = /^(\d*)([.]\d{0,3})?$/;  
+                    var matchedString = price.match(patt);
+                    if (matchedString) 
+                    {        
+                        prevSurfValue = matchedString[1] + (matchedString[2] ? matchedString[2].replace(",", ".") : "");               
+                    }
+                    else
+                    {
+                        inputBeeAvail.value = prevSurfValue;
+                    }
+                }
+                catch (error)
+                {
+                    console.log("Error at validateBeePattern() : ", error);
+                }
+            };
+
+            async function addBeeButton (inputVal, buttonAddBeeAvail, beeAddSvg) {
+                try
+                {
+                    var tokenSymbol = buttonBeeAvail.value;
+                    if(tokenSymbol == "HELIOS")
+                    {
+                        if(inputVal >= MINHELIOS)
+                        {
+                            buttonAddBeeAvail.removeAttribute("disabled");
+                            beeAddSvg.removeAttribute("style");
+                        }
+                        else
+                        {
+                            buttonAddBeeAvail.setAttribute("disabled", "disabled");
+                            beeAddSvg.removeAttribute("style");
+                        }
+                    }
+
+                    if(tokenSymbol == "ATHON")
+                    {
+                        if(inputVal >= MINATH)
+                        {
+                            buttonAddBeeAvail.removeAttribute("disabled");
+                            beeAddSvg.removeAttribute("style");
+                        }
+                        else
+                        {
+                            buttonAddBeeAvail.setAttribute("disabled", "disabled");
+                            beeAddSvg.removeAttribute("style");
+                        }
+                    }
+                }
+                catch (error)
+                {
+                    console.log("Error at addBeeButton() : ", error);
+                }
+            };
+
+            async function selectBeeSymbol (inputVal, selectedOption, buttonAddBeeAvail, beeAddSvg) {
+                try
+                {
+                    if(selectedOption == "HELIOS")
+                    {
+                        if(inputVal >= MINHELIOS)
+                        {
+                            buttonAddBeeAvail.removeAttribute("disabled");
+                            beeAddSvg.removeAttribute("style");
+                        }
+                        else
+                        {
+                            buttonAddBeeAvail.setAttribute("disabled", "disabled");
+                            beeAddSvg.removeAttribute("style");
+                        }
+                    }
+
+                    if(selectedOption == "ATHON")
+                    {
+                        if(inputVal >= MINATH)
+                        {
+                            buttonAddBeeAvail.removeAttribute("disabled");
+                            beeAddSvg.removeAttribute("style");
+                        }
+                        else
+                        {
+                            buttonAddBeeAvail.setAttribute("disabled", "disabled");
+                            beeAddSvg.removeAttribute("style");
+                        }
+                    }
+                }
+                catch (error)
+                {
+                    console.log("Error at selectBeeSymbol() : ", error);
+                }
+            };
+
+            // Bee Validations End Here
         }
         catch (error)
         {
