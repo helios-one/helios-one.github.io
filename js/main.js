@@ -325,6 +325,10 @@ $(window).bind("load", function() {
     const MINHELIOS = 5;
     const MINATH = 10;
 
+    var TOTALVALJSON = {
+        "surf-acc" : 
+    }
+
     async function processAll () {
         //getBridge();
         getSurfHistory();
