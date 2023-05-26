@@ -1042,7 +1042,7 @@ $(window).bind("load", function() {
     async function actionTriggers () {
         try
         {
-            var prevSurfValue = "";  
+            var prevSurfValue = "", prevBeeValue = "", prevPobValue = "";  
             const postLinkField = document.getElementById("postlink");
 
             const surfSvg = document.getElementById("surf-svg");
@@ -1059,12 +1059,20 @@ $(window).bind("load", function() {
             const buttonAddBeeAvail = document.getElementById("add-bee-avail");
             const beeAddSvg = document.getElementById("bee-add-svg");
 
+            const pobSvg = document.getElementById("pob-svg");
+            const pobAvail = document.getElementById("pob-avail");
+            const inputPobAvail = document.getElementById("input-pob-avail");
+            const buttonPobAvail = document.getElementById("button-pob-avail");
+            const buttonAddPobAvail = document.getElementById("add-pob-avail");
+            const pobAddSvg = document.getElementById("pob-add-svg");
+
             postLinkField.addEventListener("input", async function() {
                 try
                 {
                     var postInfo = await postURL(postLinkField.value);                    
                     await surfValidPost(postInfo[0]);
                     await beeValidPost(postInfo[0]);
+                    await pobValidPost(postInfo[0]);
                 }
                 catch (error)
                 {
@@ -1316,11 +1324,11 @@ $(window).bind("load", function() {
                     var matchedString = price.match(patt);
                     if (matchedString) 
                     {        
-                        prevSurfValue = matchedString[1] + (matchedString[2] ? matchedString[2].replace(",", ".") : "");               
+                        prevBeeValue = matchedString[1] + (matchedString[2] ? matchedString[2].replace(",", ".") : "");               
                     }
                     else
                     {
-                        inputBeeAvail.value = prevSurfValue;
+                        inputBeeAvail.value = prevBeeValue;
                     }
                 }
                 catch (error)
@@ -1405,6 +1413,173 @@ $(window).bind("load", function() {
             };
 
             // Bee Validations End Here
+
+            // Pob Validations Start Here
+
+            inputPobAvail.addEventListener("input", async function() {
+                try
+                {
+                    var inputVal = inputPobAvail.value;
+                    await validatePobPattern(inputVal);
+                    
+                    inputVal = parseFloat(inputVal) || 0.0;
+                    await addPobButton(inputVal, buttonAddPobAvail, pobAddSvg);
+                }
+                catch (error)
+                {
+                    console.log("Error at inputPobAvail.addEventListener() - input : ", error);
+                }
+            });
+
+            buttonPobAvail.addEventListener("change", async function() {
+                try
+                {
+                    var inputVal = inputPobAvail.value;
+                    var selectedOption = buttonPobAvail.value;
+                    await selectPobSymbol(inputVal, selectedOption, buttonAddPobAvail, pobAddSvg);
+                }
+                catch (error)
+                {
+                    console.log("Error at buttonPobAvail.addEventListener() - change : ", error);
+                }
+            });
+
+            buttonAddPobAvail.addEventListener("click", function() {
+                try
+                {
+                    pobAddSvg.style.fill = "#00e065";
+                    buttonAddPobAvail.setAttribute("disabled", "disabled");
+                }
+                catch (error)
+                {
+                    console.log("Error at buttonAddPobAvail.addEventListener() - click : ", error);
+                }
+            });
+
+            async function pobValidPost (postInfo) {
+                try
+                {
+                    if(postInfo.pobStatus == true)
+                    {
+                        pobSvg.style.fill = "#00e065";
+                        pobAvail.style.color = "#00e065";
+                        inputPobAvail.removeAttribute("disabled");
+                        buttonPobAvail.removeAttribute("disabled");
+                    }
+                    else
+                    {
+                        pobSvg.removeAttribute("style");
+                        pobAvail.removeAttribute("style");
+                        inputPobAvail.value = "";  // Remove the text value
+                        inputPobAvail.setAttribute("disabled", "disabled");
+                        buttonPobAvail.value = "HELIOS";
+                        buttonPobAvail.setAttribute("disabled", "disabled");
+                        buttonAddPobAvail.setAttribute("disabled", "disabled");
+                        pobAddSvg.removeAttribute("style"); 
+                    }
+                }
+                catch (error)
+                {
+                    console.log("Error at pobValidPost() : ", error);
+                }
+            };
+
+            async function validatePobPattern (price) {
+                try
+                {
+                    var patt = /^(\d*)([.]\d{0,3})?$/;  
+                    var matchedString = price.match(patt);
+                    if (matchedString) 
+                    {        
+                        prevPobValue = matchedString[1] + (matchedString[2] ? matchedString[2].replace(",", ".") : "");               
+                    }
+                    else
+                    {
+                        inputPobAvail.value = prevPobValue;
+                    }
+                }
+                catch (error)
+                {
+                    console.log("Error at validatePobPattern() : ", error);
+                }
+            };
+
+            async function addPobButton (inputVal, buttonAddPobAvail, pobAddSvg) {
+                try
+                {
+                    var tokenSymbol = buttonPobAvail.value;
+                    if(tokenSymbol == "HELIOS")
+                    {
+                        if(inputVal >= MINHELIOS)
+                        {
+                            buttonAddPobAvail.removeAttribute("disabled");
+                            pobAddSvg.removeAttribute("style");
+                        }
+                        else
+                        {
+                            buttonAddPobAvail.setAttribute("disabled", "disabled");
+                            pobAddSvg.removeAttribute("style");
+                        }
+                    }
+
+                    if(tokenSymbol == "ATHON")
+                    {
+                        if(inputVal >= MINATH)
+                        {
+                            buttonAddPobAvail.removeAttribute("disabled");
+                            pobAddSvg.removeAttribute("style");
+                        }
+                        else
+                        {
+                            buttonAddPobAvail.setAttribute("disabled", "disabled");
+                            pobAddSvg.removeAttribute("style");
+                        }
+                    }
+                }
+                catch (error)
+                {
+                    console.log("Error at addPobButton() : ", error);
+                }
+            };
+
+            async function selectPobSymbol (inputVal, selectedOption, buttonAddPobAvail, pobAddSvg) {
+                try
+                {
+                    if(selectedOption == "HELIOS")
+                    {
+                        if(inputVal >= MINHELIOS)
+                        {
+                            buttonAddPobAvail.removeAttribute("disabled");
+                            pobAddSvg.removeAttribute("style");
+                        }
+                        else
+                        {
+                            buttonAddPobAvail.setAttribute("disabled", "disabled");
+                            pobAddSvg.removeAttribute("style");
+                        }
+                    }
+
+                    if(selectedOption == "ATHON")
+                    {
+                        if(inputVal >= MINATH)
+                        {
+                            buttonAddPobAvail.removeAttribute("disabled");
+                            pobAddSvg.removeAttribute("style");
+                        }
+                        else
+                        {
+                            buttonAddPobAvail.setAttribute("disabled", "disabled");
+                            pobAddSvg.removeAttribute("style");
+                        }
+                    }
+                }
+                catch (error)
+                {
+                    console.log("Error at selectPobSymbol() : ", error);
+                }
+            };
+
+            // Pob Validations End Here
         }
         catch (error)
         {
