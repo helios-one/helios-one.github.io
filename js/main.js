@@ -26,7 +26,10 @@ $(window).bind("load", function() {
 
     let ssc;
 
-    var hivePriceAPI = "https://api.coingecko.com/api/v3/simple/price?ids=hive&vs_currencies=usd";
+    var hiveCoinGeckoAPI = "https://api.coingecko.com/api/v3/simple/price?ids=hive&vs_currencies=usd";
+    var hiveMessariAPI = "https://data.messari.io/api/v1/assets/hive/metrics";
+    var hiveCoinCapAPI = "https://api.coincap.io/v2/assets/hive-blockchain";
+    var hiveCryptoCompareAPI = "https://min-api.cryptocompare.com/data/price?fsym=HIVE&tsyms=USD";
     
     async function checkHiveNodeStatus(nodeUrl, statusElement) {
         try 
@@ -325,9 +328,7 @@ $(window).bind("load", function() {
     const MINHELIOS = 5;
     const MINATH = 10;
 
-    var TOTALVALJSON = {
-        "surf-acc" : 
-    }
+    var CALLERJSON = [];
 
     async function processAll () {
         //getBridge();
@@ -545,11 +546,11 @@ $(window).bind("load", function() {
         }
     };    
 
-    $(document).ready(function() { 
-        clickFunctions();
+    $(document).ready(function() {        
         refresh(); 
         loadHiveNode();
         loadEngineNode();
+        clickFunctions();
         actionTriggers();
     });
 
@@ -895,12 +896,25 @@ $(window).bind("load", function() {
         }
     };
 
+    // Check With USD Start Here
+
     async function getHiveUSD () {
-        var hiveUSD = 0;
+        var hiveUSD = 0.0;
         try
         {
-            const { data } = await axios.get(hivePriceAPI);
-            hiveUSD = data.hive.usd;
+            hiveUSD = await getCoinGeckoPrice();
+            if(hiveUSD <= 0)
+            {
+                hiveUSD = await getMessariPrice();
+                if(hiveUSD <= 0)
+                {
+                    hiveUSD = await getCoinCapPrice();
+                    if(hiveUSD <= 0)
+                    {
+                        hiveUSD = await getCryptoComparePrice();
+                    }
+                }
+            }
             return hiveUSD;
         }
         catch (error)
@@ -909,6 +923,68 @@ $(window).bind("load", function() {
             return hiveUSD;
         }
     };
+
+    async function getCoinGeckoPrice () {
+        var hPrice = 0.0;
+        try
+        {
+            const { data } = await axios.get(hiveCoinGeckoAPI);
+            hPrice = data.hive.usd;
+            return hPrice;
+        }
+        catch (error)
+        {
+            console.log("Error at getCoinGeckoPrice() : ", error);
+            return hPrice;
+        }
+    };
+
+    async function getMessariPrice () {
+        var hPrice = 0.0;
+        try
+        {
+            const { data } = await axios.get(hiveMessariAPI);
+            hPrice = data.data.market_data.price_usd;
+            return hPrice;
+        }
+        catch (error)
+        {
+            console.log("Error at getMessariPrice() : ", error);
+            return hPrice;
+        }
+    };
+
+    async function getCoinCapPrice () {
+        var hPrice = 0.0;
+        try
+        {
+            const { data } = await axios.get(hiveCoinCapAPI);
+            hPrice = data.data.priceUsd;
+            return hPrice;
+        }
+        catch (error)
+        {
+            console.log("Error at getCoinCapPrice() : ", error);
+            return hPrice;
+        }
+    };
+
+    async function getCryptoComparePrice () {
+        var hPrice = 0.0;
+        try
+        {
+            const { data } = await axios.get(hiveCryptoCompareAPI);
+            hPrice = data.USD;
+            return hPrice;
+        }
+        catch (error)
+        {
+            console.log("Error at getCryptoComparePrice() : ", error);
+            return hPrice;
+        }
+    };
+
+    // Check With UDSD End Here
 
     async function clickFunctions () {
         try
@@ -1045,9 +1121,10 @@ $(window).bind("load", function() {
 
     async function actionTriggers () {
         try
-        {
+        {            
             var prevSurfValue = "", prevBeeValue = "", prevPobValue = "";  
             const postLinkField = document.getElementById("postlink");
+            const usernameInput = document.getElementById("username");            
 
             const surfSvg = document.getElementById("surf-svg");
             const surfAvail = document.getElementById("surf-avail");
@@ -1068,21 +1145,34 @@ $(window).bind("load", function() {
             const inputPobAvail = document.getElementById("input-pob-avail");
             const buttonPobAvail = document.getElementById("button-pob-avail");
             const buttonAddPobAvail = document.getElementById("add-pob-avail");
-            const pobAddSvg = document.getElementById("pob-add-svg");
+            const pobAddSvg = document.getElementById("pob-add-svg");            
+
+            usernameInput.addEventListener("input", async function() {
+                try
+                {                    
+                    updateBalance();
+                    await removeSurfJson();                                                             
+                    await updateSurfElements();                                        
+                }
+                catch (error)
+                {
+                    console.log("Error at usernameInput.addEventListener() - input : ", error);
+                }
+            });
 
             postLinkField.addEventListener("input", async function() {
                 try
-                {
-                    var postInfo = await postURL(postLinkField.value);                    
+                {                    
+                    var postInfo = await postURL(postLinkField.value);                                       
                     await surfValidPost(postInfo[0]);
                     await beeValidPost(postInfo[0]);
-                    await pobValidPost(postInfo[0]);
+                    await pobValidPost(postInfo[0]);                    
                 }
                 catch (error)
                 {
                     console.log("Error at postLinkField.addEventListener() - input : ", error);
                 }
-            });
+            });            
 
             // Surf Validations Start Here
 
@@ -1094,6 +1184,8 @@ $(window).bind("load", function() {
                     
                     inputVal = parseFloat(inputVal) || 0.0;
                     await addSurfButton(inputVal, buttonAddSurfAvail, surfAddSvg);
+
+                    await removeSurfJson();                    
                 }
                 catch (error)
                 {
@@ -1107,6 +1199,7 @@ $(window).bind("load", function() {
                     var inputVal = inputSurfAvail.value;
                     var selectedOption = buttonSurfAvail.value;
                     await selectSurfSymbol(inputVal, selectedOption, buttonAddSurfAvail, surfAddSvg);
+                    await removeSurfJson();
                 }
                 catch (error)
                 {
@@ -1114,11 +1207,12 @@ $(window).bind("load", function() {
                 }
             });
 
-            buttonAddSurfAvail.addEventListener("click", function() {
+            buttonAddSurfAvail.addEventListener("click", async function() {
                 try
                 {
                     surfAddSvg.style.fill = "#00e065";
                     buttonAddSurfAvail.setAttribute("disabled", "disabled");
+                    await processSurfJson(usernameInput.value, inputSurfAvail.value, buttonSurfAvail.value, postLinkField.value); 
                 }
                 catch (error)
                 {
@@ -1147,6 +1241,7 @@ $(window).bind("load", function() {
                         buttonAddSurfAvail.setAttribute("disabled", "disabled");
                         surfAddSvg.removeAttribute("style"); 
                     }
+                    await removeSurfJson();  
                 }
                 catch (error)
                 {
@@ -1246,6 +1341,33 @@ $(window).bind("load", function() {
                 catch (error)
                 {
                     console.log("Error at selectSurfSymbol() : ", error);
+                }
+            };
+
+            async function updateSurfElements () {
+                try
+                {
+                    var postInfo = await postURL(postLinkField.value);                    
+                    if(postInfo[0].surfStatus == true)
+                    {
+                        buttonAddSurfAvail.removeAttribute("disabled");
+                        surfAddSvg.removeAttribute("style");
+                    }
+                    else
+                    {
+                        surfSvg.removeAttribute("style");
+                        surfAvail.removeAttribute("style");
+                        inputSurfAvail.value = "";  // Remove the text value
+                        inputSurfAvail.setAttribute("disabled", "disabled");
+                        buttonSurfAvail.value = "HELIOS";
+                        buttonSurfAvail.setAttribute("disabled", "disabled");
+                        buttonAddSurfAvail.setAttribute("disabled", "disabled");
+                        surfAddSvg.removeAttribute("style"); 
+                    }
+                }
+                catch (error)
+                {
+                    console.log("Error at updateSurfElements() : ", error);
                 }
             };
 
@@ -1584,6 +1706,70 @@ $(window).bind("load", function() {
             };
 
             // Pob Validations End Here
+
+            // Add To JSON
+
+            async function processSurfJson (userName, inputVal, tokenSymbol, permLink) {
+                try
+                {
+                    var updatedCallerJson = CALLERJSON.map(function(json) {
+                        if (json.type === "surf") 
+                        {
+                            // Replace the existing JSON object with a new one
+                            return { 
+                                type: "surf",
+                                username: userName,
+                                input: inputVal,
+                                sysmbol: tokenSymbol,
+                                link: permLink  
+                            };
+                        } 
+                        else 
+                        {
+                            // Keep the original JSON object
+                            return json;
+                        }
+                    });
+
+                    // Check if there was a JSON object with type 'surf' in CALLERJSON
+                    var existingJsonIndex = CALLERJSON.findIndex(function(json) {
+                        return json.type === "surf";
+                    });
+
+                    // If no existing JSON object was found, add a new one
+                    if (existingJsonIndex === -1) {
+                        var newJson ={ 
+                            type: "surf",
+                            username: userName,
+                            input: inputVal,
+                            sysmbol: tokenSymbol,
+                            link: permLink  
+                        };
+                        updatedCallerJson.push(newJson);
+                    }
+
+                    // Assign the updated array back to CALLERJSON
+                    CALLERJSON = updatedCallerJson;
+                }
+                catch (error)
+                {
+                    console.log("Error at processSurfJson() : ", error);
+                }
+            };
+
+            async function removeSurfJson () {
+                try
+                {
+                    // Remove the JSON object with type 'surf' from CALLERJSON
+                    CALLERJSON = CALLERJSON.filter(function(json) {
+                        return json.type !== "surf";
+                    });
+                }
+                catch (error)
+                {
+                    console.log("Error at removeSurfJson() : ", error);
+                }
+            };
         }
         catch (error)
         {
@@ -1597,8 +1783,8 @@ $(window).bind("load", function() {
         try
         {    
             const author = post_link.split("@")[1].split("/")[0];
-            const link = post_link.split("@")[1].split("/")[1];
-            var postData = await hive.api.getContentAsync(author, link);
+            const link = post_link.split("@")[1].split("/")[1];            
+            var postData = await hive.api.getContentAsync(author, link);            
             if(postData != null || Object.keys(postData).length !== 0)
             {               
                 var postValidation = await isValid(postData);
@@ -1617,10 +1803,6 @@ $(window).bind("load", function() {
                         pobStatus = true;
                     }
                 }                
-            }
-            else
-            {
-                console.log("HERE NO postData : ", postData);                
             }
 
             var ddata = {
@@ -1753,13 +1935,42 @@ $(window).bind("load", function() {
 
     });   
 
-    async function updateBalance() {        
-        var balHelios = await getHeliosBalances(user);               
-        $("#helios").text(balHelios[0].heliosVal.toFixed(3));
-        $("#helios_bal_value").text(balHelios[0].hiveVal);
-        var balAthon = await getAthonBalances(user);        
-        $("#athon").text(balAthon[0].athonVal.toFixed(3));
-        $("#athon_bal_value").text(balAthon[0].hiveVal);
+    async function updateBalance() { 
+        try
+        {            
+            var accStatus = await getAccountInfo(user);
+            if(accStatus == true)
+            {                     
+                var balHelios = await getHeliosBalances(user);               
+                $("#helios").text(balHelios[0].heliosVal.toFixed(3));
+                $("#helios_bal_value").text(balHelios[0].hiveVal);
+                var balAthon = await getAthonBalances(user);        
+                $("#athon").text(balAthon[0].athonVal.toFixed(3));
+                $("#athon_bal_value").text(balAthon[0].hiveVal);
+            }
+        }
+        catch (error)
+        {
+            console.log("Error at updateBalance() : ", error);
+        }
+    };
+
+    async function getAccountInfo (accountUser) {
+        var accStatus = false;
+        try
+        {                                        
+            const accData = await hive.api.getAccountsAsync([accountUser]);
+            if(accData.length > 0)
+            {
+                accStatus = true;
+            }
+            return accStatus;
+        }
+        catch (error)
+        {
+            console.log("Error at getAccountInfo() : ", error);
+            return accStatus;
+        }
     };
 
     if (localStorage['user']) {
