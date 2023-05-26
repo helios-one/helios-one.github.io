@@ -321,10 +321,9 @@ $(window).bind("load", function() {
     window.history.replaceState({}, document.title, "/" + "");
 
     var user = null;
-    var MARKETVALUES;
 
     const MINHELIOS = 5;
-    const MINATH = 5;
+    const MINATH = 10;
 
     async function processAll () {
         //getBridge();
@@ -1043,10 +1042,194 @@ $(window).bind("load", function() {
     async function actionTriggers () {
         try
         {
+            var prevSurfValue = "";  
             const postLinkField = document.getElementById("postlink");
+
+            const surfSvg = document.getElementById("surf-svg");
+            const surfAvail = document.getElementById("surf-avail");
+            const inputSurfAvail = document.getElementById("input-surf-avail");
+            const buttonSurfAvail = document.getElementById("button-surf-avail");
+            const buttonAddSurfAvail = document.getElementById("add-surf-avail");
+            const surfAddSvg = document.getElementById("surf-add-svg");
+
             postLinkField.addEventListener("input", async function() {
-                await postURL(postLinkField.value);
+                try
+                {
+                    var postInfo = await postURL(postLinkField.value);
+                    await surfValidPost(postInfo[0]);
+                }
+                catch (error)
+                {
+                    console.log("Error at postLinkField.addEventListener() - input : ", error);
+                }
             });
+
+            // Surf Validations Start Here
+
+            inputSurfAvail.addEventListener("input", async function() {
+                try
+                {
+                    var inputVal = inputSurfAvail.value;
+                    await validateSurfPattern(inputVal);
+                    
+                    inputVal = parseFloat(inputVal) || 0.0;
+                    await addSurfButton(inputVal, buttonAddSurfAvail, surfAddSvg);
+                }
+                catch (error)
+                {
+                    console.log("Error at inputSurfAvail.addEventListener() - input : ", error);
+                }
+            });
+
+            buttonSurfAvail.addEventListener("change", async function() {
+                try
+                {
+                    var inputVal = inputSurfAvail.value;
+                    var selectedOption = buttonSurfAvail.value;
+                    await selectSurfSymbol(inputVal, selectedOption, buttonAddSurfAvail, surfAddSvg);
+                }
+                catch (error)
+                {
+                    console.log("Error at buttonSurfAvail.addEventListener() - change : ", error);
+                }
+            });
+
+            buttonAddSurfAvail.addEventListener("click", function() {
+                try
+                {
+                    surfAddSvg.style.fill = "#00e065";
+                    buttonAddSurfAvail.setAttribute("disabled", "disabled");
+                }
+                catch (error)
+                {
+                    console.log("Error at buttonAddSurfAvail.addEventListener() - click : ", error);
+                }
+            });
+
+            async function surfValidPost (postInfo) {
+                try
+                {
+                    if(postInfo.surfStatus == true)
+                    {
+                        surfSvg.style.fill = "#00e065";
+                        surfAvail.style.color = "#00e065";
+                        inputSurfAvail.removeAttribute("disabled");
+                        buttonSurfAvail.removeAttribute("disabled");
+                    }
+                    else
+                    {
+                        surfSvg.removeAttribute("style");
+                        surfAvail.removeAttribute("style");
+                        inputSurfAvail.value = "";  // Remove the text value
+                        inputSurfAvail.setAttribute("disabled", "disabled");
+                        buttonSurfAvail.value = "HELIOS";
+                        buttonSurfAvail.setAttribute("disabled", "disabled");
+                        buttonAddSurfAvail.setAttribute("disabled", "disabled");
+                        surfAddSvg.removeAttribute("style"); 
+                    }
+                }
+                catch (error)
+                {
+                    console.log("Error at surfValidPost() : ", error);
+                }
+            };
+
+            async function validateSurfPattern (price) {
+                try
+                {
+                    var patt = /^(\d*)([.]\d{0,3})?$/;  
+                    var matchedString = price.match(patt);
+                    if (matchedString) 
+                    {        
+                        prevSurfValue = matchedString[1] + (matchedString[2] ? matchedString[2].replace(",", ".") : "");               
+                    }
+                    else
+                    {
+                        inputSurfAvail.value = prevSurfValue;
+                    }
+                }
+                catch (error)
+                {
+                    console.log("Error at validateSurfPattern() : ", error);
+                }
+            };
+
+            async function addSurfButton (inputVal, buttonAddSurfAvail, surfAddSvg) {
+                try
+                {
+                    var tokenSymbol = buttonSurfAvail.value;
+                    if(tokenSymbol == "HELIOS")
+                    {
+                        if(inputVal >= MINHELIOS)
+                        {
+                            buttonAddSurfAvail.removeAttribute("disabled");
+                            surfAddSvg.removeAttribute("style");
+                        }
+                        else
+                        {
+                            buttonAddSurfAvail.setAttribute("disabled", "disabled");
+                            surfAddSvg.removeAttribute("style");
+                        }
+                    }
+
+                    if(tokenSymbol == "ATHON")
+                    {
+                        if(inputVal >= MINATH)
+                        {
+                            buttonAddSurfAvail.removeAttribute("disabled");
+                            surfAddSvg.removeAttribute("style");
+                        }
+                        else
+                        {
+                            buttonAddSurfAvail.setAttribute("disabled", "disabled");
+                            surfAddSvg.removeAttribute("style");
+                        }
+                    }
+                }
+                catch (error)
+                {
+                    console.log("Error at addSurfButton() : ", error);
+                }
+            };
+
+            async function selectSurfSymbol (inputVal, selectedOption, buttonAddSurfAvail, surfAddSvg) {
+                try
+                {
+                    if(selectedOption == "HELIOS")
+                    {
+                        if(inputVal >= MINHELIOS)
+                        {
+                            buttonAddSurfAvail.removeAttribute("disabled");
+                            surfAddSvg.removeAttribute("style");
+                        }
+                        else
+                        {
+                            buttonAddSurfAvail.setAttribute("disabled", "disabled");
+                            surfAddSvg.removeAttribute("style");
+                        }
+                    }
+
+                    if(selectedOption == "ATHON")
+                    {
+                        if(inputVal >= MINATH)
+                        {
+                            buttonAddSurfAvail.removeAttribute("disabled");
+                            surfAddSvg.removeAttribute("style");
+                        }
+                        else
+                        {
+                            buttonAddSurfAvail.setAttribute("disabled", "disabled");
+                            surfAddSvg.removeAttribute("style");
+                        }
+                    }
+                }
+                catch (error)
+                {
+                    console.log("Error at selectSurfSymbol() : ", error);
+                }
+            };
+
+            // Surf Validations End Here
         }
         catch (error)
         {
@@ -1055,31 +1238,56 @@ $(window).bind("load", function() {
     };
     
     async function postURL (post_link) {
+        var postJson = [];
+        var surfStatus = false, beeStatus = false, pobStatus = false;
         try
-        {            
-            console.log("post_link : ", post_link);
+        {    
             const author = post_link.split("@")[1].split("/")[0];
             const link = post_link.split("@")[1].split("/")[1];
             var postData = await hive.api.getContentAsync(author, link);
             if(postData != null || Object.keys(postData).length !== 0)
-            {
-                console.log("HERE postData : ", postData);
+            {               
+                var postValidation = await isValid(postData);
+                if(postValidation == true)
+                {
+                    surfStatus =  true;
+                    var beeTagStatus = await checkBeeTags(postData);
+                    if(beeTagStatus == true)
+                    {
+                        beeStatus = true;
+                    }
+
+                    var pobTagStatus = await checkPobTags(postData);
+                    if(pobTagStatus == true)
+                    {
+                        pobStatus = true;
+                    }
+                }                
             }
             else
             {
-                console.log("HERE NO postData : ", postData);
+                console.log("HERE NO postData : ", postData);                
             }
-           
-            var beeTagStatus = await checkBeeTags(postData);
-            if(beeTagStatus == true)
-            {
 
+            var ddata = {
+                "surfStatus" : surfStatus,
+                "beeStatus" : beeStatus,
+                "pobStatus" : pobStatus
             }
-            
+            postJson.push(ddata);
+            return postJson;
         }
         catch (error)
         {
             console.log("Error at postURL() : ", error);
+
+            var ddata = {
+                "surfStatus" : surfStatus,
+                "beeStatus" : beeStatus,
+                "pobStatus" : pobStatus
+            }
+            postJson.push(ddata);
+            return postJson;
         }
     };
 
@@ -1087,8 +1295,7 @@ $(window).bind("load", function() {
         var validStatus = false;
         try
         {
-            const json_metadata = JSON.parse(postData.json_metadata);
-            console.log(json_metadata);
+            const json_metadata = JSON.parse(postData.json_metadata);            
             if (json_metadata.tags.includes("tribes") || json_metadata.tags.includes("hive-engine")) 
             {                
                 validStatus = true;
@@ -1099,6 +1306,46 @@ $(window).bind("load", function() {
         {
             console.log("Error at checkBeeTags() : ", error);
             return validStatus;
+        }
+    };
+
+    async function checkPobTags (postData) {
+        var validStatus = false;
+        try
+        {
+            const json_metadata = JSON.parse(postData.json_metadata);            
+            if (json_metadata.tags.includes("proofofbrain") || json_metadata.tags.includes("pob")) 
+            {                
+                validStatus = true;
+            }
+            return validStatus;
+        }
+        catch (error)
+        {
+            console.log("Error at checkPobTags() : ", error);
+            return validStatus;
+        }
+    };
+
+    async function isValid (postData) {
+        var postValid = false;
+        try
+        {
+            const valid_diffence = 18 * 60 * 60 * 1000;
+            const { created } = postData;
+            const created_timestamp = new Date(created).getTime();
+            const current_timestamp = new Date().getTime();
+            const diff = current_timestamp - created_timestamp;
+            if (diff < valid_diffence) 
+            {
+                postValid = true;
+            }
+            return postValid;
+        }
+        catch (error)
+        {
+            console.log("Error at isValid() : ", error);
+            return postValid;
         }
     };
 
@@ -1150,13 +1397,7 @@ $(window).bind("load", function() {
 
         updateBurn();
 
-    });
-
-    $("#inputquantity").keyup(() => { updateBurn(); });
-
-    $("#input").change(() => { updateBurn(); });
-
-    $("#post").keyup(() => { updateBurn(); });
+    });   
 
     async function updateBalance() {        
         var balHelios = await getHeliosBalances(user);               
@@ -1171,23 +1412,7 @@ $(window).bind("load", function() {
         $("#username").val(localStorage['user']);
         user = localStorage['user'];
         updateBalance();
-    };
-
-    async function isValid (post) {
-        const valid_diffence = 18 * 60 * 60 * 1000;
-        const { created } = post;
-        const created_timestamp = new Date(created).getTime();
-        const current_timestamp = new Date().getTime();
-        const diff = current_timestamp - created_timestamp;
-        if (diff > valid_diffence) 
-        {
-            return false;
-        }
-        else 
-        {
-            return true;
-        }
-    };
+    };    
 
     $("#swap").click(async function () {
 
