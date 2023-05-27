@@ -1063,8 +1063,7 @@ $(window).bind("load", function() {
                 {
                     console.log("Error at checkbalance-Click : ", error);
                 }
-            });
-        
+            });        
         }
         catch (error)
         {
@@ -1145,7 +1144,7 @@ $(window).bind("load", function() {
         {            
             var prevSurfValue = "", prevBeeValue = "", prevPobValue = "";  
             const postLinkField = document.getElementById("postlink");
-            const usernameInput = document.getElementById("username");            
+            const usernameInput = document.getElementById("username");
 
             const surfSvg = document.getElementById("surf-svg");
             const surfAvail = document.getElementById("surf-avail");
@@ -1172,6 +1171,9 @@ $(window).bind("load", function() {
             const pobAddSvg = document.getElementById("pob-add-svg");
             
             const buttonBurnTokens = document.getElementById("burn-token");
+
+            const heliosBalanceInput = document.getElementById("helios_bal");
+            const athonBalanceInput = document.getElementById("athon_bal");
 
             usernameInput.addEventListener("input", async function() {
                 try
@@ -1305,7 +1307,49 @@ $(window).bind("load", function() {
                 {
                     console.log("Error at sendTransactions():", error);
                 }
-            };  
+            };
+            
+            heliosBalanceInput.addEventListener("click", async function() {
+                try
+                {
+                    const heliosBalText = heliosBalanceInput.textContent;
+                    if(!inputSurfAvail.disabled && !buttonSurfAvail.disabled)
+                    {
+                        inputSurfAvail.value = heliosBalText;
+                        buttonSurfAvail.value = "HELIOS";
+
+                        var inputVal = inputSurfAvail.value;
+                        var selectedOption = buttonSurfAvail.value;
+                        await selectSurfSymbol(inputVal, selectedOption, buttonAddSurfAvail, surfAddSvg);
+                        await removeSurfJson();
+                    }
+                }
+                catch (error)
+                {
+                    console.log("Error at heliosBalanceInput.addEventListener() - click:", error);
+                }
+            });
+
+            athonBalanceInput.addEventListener("click", async function() {
+                try
+                {
+                    const athonBalText = athonBalanceInput.textContent;
+                    if(!inputSurfAvail.disabled && !buttonSurfAvail.disabled)
+                    {
+                        inputSurfAvail.value = athonBalText;
+                        buttonSurfAvail.value = "ATHON";
+
+                        var inputVal = inputSurfAvail.value;
+                        var selectedOption = buttonSurfAvail.value;
+                        await selectSurfSymbol(inputVal, selectedOption, buttonAddSurfAvail, surfAddSvg);
+                        await removeSurfJson();
+                    }
+                }
+                catch (error)
+                {
+                    console.log("Error at athonBalanceInput.addEventListener() - click:", error);
+                }
+            });
 
             // Surf Validations Start Here
 
@@ -2476,56 +2520,6 @@ $(window).bind("load", function() {
         }
     };
 
-    async function updateBurn(r) {
-        try 
-        {
-            const symbol = $("#input").val();
-            const val = $("#inputquantity").val();
-            const post_link = $("#post").val();
-
-            const {
-                lastPrice,
-                lastDayPrice
-            } = marketvalues[symbol];
-
-            let es_val = (parseFloat(lastPrice) + parseFloat(lastDayPrice)) / 2;
-            es_val *= marketvalues.HIVE;
-            es_val *= val;
-            es_val = dec(es_val);
-
-            $("#es_val").text(`$ ${es_val}`);
-            function isMin(val) {
-                if (val >= min[symbol]) return true;
-                else return false;
-            }
-
-            if (isMin(val) && bal[symbol] >= val && post_link.length > 0) 
-            {
-                $("#swap").removeAttr("disabled");
-                if (r) r(true, parseFloat(val).toFixed(3), symbol, post_link);
-            } 
-            else 
-            {
-                $("#swap").attr("disabled", "true");
-                if (r) r(false, 0, 0, comment);
-            }
-        } 
-        catch (error) 
-        {
-            console.log("Error at updateBurn() : ", error);
-        }
-    };
-
-    $(".s").click(function () {
-
-        $("#input").val($(this).find(".sym").text());
-
-        $("#inputquantity").val($(this).find(".qt").text());
-
-        updateBurn();
-
-    });   
-
     async function updateBalance() { 
         try
         {            
@@ -2533,10 +2527,10 @@ $(window).bind("load", function() {
             if(accStatus == true)
             {                 
                 var balHelios = await getHeliosBalances(user);               
-                $("#helios").text(balHelios[0].heliosVal.toFixed(3));
+                $("#helios_bal").text(balHelios[0].heliosVal.toFixed(3));
                 $("#helios_bal_value").text(balHelios[0].hiveVal);
                 var balAthon = await getAthonBalances(user);        
-                $("#athon").text(balAthon[0].athonVal.toFixed(3));
+                $("#athon_bal").text(balAthon[0].athonVal.toFixed(3));
                 $("#athon_bal_value").text(balAthon[0].hiveVal);
             }
         }
@@ -2569,148 +2563,6 @@ $(window).bind("load", function() {
         user = localStorage['user'];
         updateBalance();
     };    
-
-    $("#swap").click(async function () {
-        $("#swap").attr("disabled", "true");
-        $("#loading").removeClass("d-none");
-        $("#status").text("Please Wait...");
-        await refresh();
-        await updateBalance();
-
-        updateBurn(async function(canBurn, amount, currency, post_link) {
-            if (canBurn) {
-                $("#swap").attr("disabled", "true");
-                let post = false;
-
-                try {
-
-                    const author = post_link.split("@")[1].split("/")[0];
-
-                    const link = post_link.split("@")[1].split("/")[1];
-
-                    post = await hive.api.getContentAsync(author, link);
-
-                    if (!post.created) throw error;
-
-                } catch (e) {
-
-                    $("#status").text("Invalid Post Link");
-
-                    $("#swap").removeAttr("disabled");
-
-                    $("#loading").addClass("d-none");
-
-                    return;
-
-                }
-
-    
-
-                if (!post) {
-
-                    $("#status").text("Invalid Post Link");
-
-                    $("#swap").removeAttr("disabled");
-
-                    $("#loading").addClass("d-none");
-
-                    return;
-
-                }
-
-
-
-                if (!isValid(post)) {
-
-                    $("#status").text("Post is older than 18 hours");
-
-                    $("#loading").addClass("d-none");
-
-                    $("#swap").removeAttr("disabled");
-
-                    return;
-
-                };
-
-
-
-                $("#loading").addClass("d-none");
-
-                $("#status").text(`Confirm the transaction through Keychain.`);
-
-
-
-                try {
-
-                    hive_keychain.requestHandshake();
-
-                } catch (e) {
-
-                    $("#loading").addClass("d-none");
-
-                    $("#status").text("No method of transaction available, Install Keychain.");
-
-                    updateBurn();
-
-                }
-
-                
-
-                if (currency === "HELIOS") {
-
-                    hive_keychain.requestSendToken(
-
-                        user,
-
-                        "helios.burn",
-
-                        amount,
-
-                        post_link,
-
-                        currency,
-
-                        async function (res) {
-
-                            if (res.success === true) {
-
-                                $("#status").text("Successfully Sent To Burn!");
-
-                                $("#status").addClass("text-success");
-
-                                await updateBalance();
-
-                                updateBurn();
-
-                            } else {
-
-                                $("#status").text("Transaction failed, Please try again.");
-
-                                updateBurn();
-
-                            }
-
-                            console.log(res);
-
-                        }
-
-                    );
-
-                }
-
-            } else {
-
-                $("#loading").addClass("d-none");
-
-                $("#status").text('Account balance updated, Try Again.');
-
-                updateBurn();
-
-            }
-
-        });
-
-    });
 
     async function processAndSaveHivePrice() {
         try
