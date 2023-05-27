@@ -1150,6 +1150,7 @@ $(window).bind("load", function() {
             const inputSurfAvail = document.getElementById("input-surf-avail");
             const buttonSurfAvail = document.getElementById("button-surf-avail");
             const buttonAddSurfAvail = document.getElementById("add-surf-avail");
+            const buttonSurfAddRemove = document.getElementById("surf-add-button");
             const surfAddSvg = document.getElementById("surf-add-svg");
 
             const beeSvg = document.getElementById("bee-svg");
@@ -1157,6 +1158,7 @@ $(window).bind("load", function() {
             const inputBeeAvail = document.getElementById("input-bee-avail");
             const buttonBeeAvail = document.getElementById("button-bee-avail");
             const buttonAddBeeAvail = document.getElementById("add-bee-avail");
+            const buttonBeeAddRemove = document.getElementById("bee-add-button");
             const beeAddSvg = document.getElementById("bee-add-svg");
 
             const pobSvg = document.getElementById("pob-svg");
@@ -1164,6 +1166,7 @@ $(window).bind("load", function() {
             const inputPobAvail = document.getElementById("input-pob-avail");
             const buttonPobAvail = document.getElementById("button-pob-avail");
             const buttonAddPobAvail = document.getElementById("add-pob-avail");
+            const buttonPobAddRemove = document.getElementById("pob-add-button");
             const pobAddSvg = document.getElementById("pob-add-svg");
             
             const buttonBurnTokens = document.getElementById("burn-token");
@@ -1247,13 +1250,39 @@ $(window).bind("load", function() {
                 try
                 {
                     surfAddSvg.style.fill = "#00e065";
+                    buttonSurfAddRemove.removeAttribute("disabled");
                     buttonAddSurfAvail.setAttribute("disabled", "disabled");
                     await processSurfJson(usernameInput.value, inputSurfAvail.value, buttonSurfAvail.value, postLinkField.value); 
+                    console.log("CALLERJSON : ", CALLERJSON); 
+                    await burnButtonInitiate();
                     await totalBurnTextProcess();
                 }
                 catch (error)
                 {
                     console.log("Error at buttonAddSurfAvail.addEventListener() - click : ", error);
+                }
+            });
+
+            buttonSurfAddRemove.addEventListener("click", async function() {
+                try
+                {
+                    surfAddSvg.removeAttribute("style");
+                    // Remove the JSON object with type 'surf' from CALLERJSON
+                    CALLERJSON = CALLERJSON.filter(function(json) {
+                        return json.type !== "surf";
+                    });
+                    buttonAddSurfAvail.removeAttribute("disabled");
+                    buttonSurfAddRemove.setAttribute("disabled", "disabled");
+                    if(CALLERJSON.length <= 0)
+                    {
+                        await burnButtonDisabled();
+                    }
+                    console.log("CALLERJSON : ", CALLERJSON); 
+                    await totalBurnTextProcess();
+                }
+                catch (error)
+                {
+                    console.log("Error at buttonPobAddRemove.addEventListener() - click : ", error);
                 }
             });
 
@@ -1276,7 +1305,8 @@ $(window).bind("load", function() {
                         buttonSurfAvail.value = "HELIOS";
                         buttonSurfAvail.setAttribute("disabled", "disabled");
                         buttonAddSurfAvail.setAttribute("disabled", "disabled");
-                        surfAddSvg.removeAttribute("style"); 
+                        surfAddSvg.removeAttribute("style");
+                        buttonSurfAddRemove.setAttribute("disabled", "disabled"); 
                     }
                     await removeSurfJson();  
                 }
@@ -1316,11 +1346,13 @@ $(window).bind("load", function() {
                         {
                             buttonAddSurfAvail.removeAttribute("disabled");
                             surfAddSvg.removeAttribute("style");
+                            buttonSurfAddRemove.setAttribute("disabled", "disabled"); 
                         }
                         else
                         {
                             buttonAddSurfAvail.setAttribute("disabled", "disabled");
                             surfAddSvg.removeAttribute("style");
+                            buttonSurfAddRemove.setAttribute("disabled", "disabled"); 
                         }
                     }
 
@@ -1330,11 +1362,13 @@ $(window).bind("load", function() {
                         {
                             buttonAddSurfAvail.removeAttribute("disabled");
                             surfAddSvg.removeAttribute("style");
+                            buttonSurfAddRemove.setAttribute("disabled", "disabled"); 
                         }
                         else
                         {
                             buttonAddSurfAvail.setAttribute("disabled", "disabled");
                             surfAddSvg.removeAttribute("style");
+                            buttonSurfAddRemove.setAttribute("disabled", "disabled"); 
                         }
                     }
                 }
@@ -1353,11 +1387,13 @@ $(window).bind("load", function() {
                         {
                             buttonAddSurfAvail.removeAttribute("disabled");
                             surfAddSvg.removeAttribute("style");
+                            buttonSurfAddRemove.setAttribute("disabled", "disabled"); 
                         }
                         else
                         {
                             buttonAddSurfAvail.setAttribute("disabled", "disabled");
                             surfAddSvg.removeAttribute("style");
+                            buttonSurfAddRemove.setAttribute("disabled", "disabled"); 
                         }
                     }
 
@@ -1367,11 +1403,13 @@ $(window).bind("load", function() {
                         {
                             buttonAddSurfAvail.removeAttribute("disabled");
                             surfAddSvg.removeAttribute("style");
+                            buttonSurfAddRemove.setAttribute("disabled", "disabled"); 
                         }
                         else
                         {
                             buttonAddSurfAvail.setAttribute("disabled", "disabled");
                             surfAddSvg.removeAttribute("style");
+                            buttonSurfAddRemove.setAttribute("disabled", "disabled"); 
                         }
                     }
                 }
@@ -1389,6 +1427,7 @@ $(window).bind("load", function() {
                     {
                         buttonAddSurfAvail.removeAttribute("disabled");
                         surfAddSvg.removeAttribute("style");
+                        buttonSurfAddRemove.setAttribute("disabled", "disabled"); 
                     }
                     else
                     {
@@ -1400,6 +1439,7 @@ $(window).bind("load", function() {
                         buttonSurfAvail.setAttribute("disabled", "disabled");
                         buttonAddSurfAvail.setAttribute("disabled", "disabled");
                         surfAddSvg.removeAttribute("style"); 
+                        buttonSurfAddRemove.setAttribute("disabled", "disabled"); 
                     }
                 }
                 catch (error)
@@ -1447,13 +1487,39 @@ $(window).bind("load", function() {
                 try
                 {
                     beeAddSvg.style.fill = "#00e065";
+                    buttonBeeAddRemove.removeAttribute("disabled");
                     buttonAddBeeAvail.setAttribute("disabled", "disabled");
                     await processBeeJson(usernameInput.value, inputBeeAvail.value, buttonBeeAvail.value, postLinkField.value);
+                    console.log("CALLERJSON : ", CALLERJSON); 
+                    await burnButtonInitiate();
                     await totalBurnTextProcess();                    
                 }
                 catch (error)
                 {
                     console.log("Error at buttonAddBeeAvail.addEventListener() - click : ", error);
+                }
+            });
+
+            buttonBeeAddRemove.addEventListener("click", async function() {
+                try
+                {
+                    beeAddSvg.removeAttribute("style");
+                    // Remove the JSON object with type 'bee' from CALLERJSON
+                    CALLERJSON = CALLERJSON.filter(function(json) {
+                        return json.type !== "bee";
+                    });
+                    buttonAddBeeAvail.removeAttribute("disabled");
+                    buttonBeeAddRemove.setAttribute("disabled", "disabled");
+                    console.log("CALLERJSON : ", CALLERJSON); 
+                    if(CALLERJSON.length <= 0)
+                    {
+                        await burnButtonDisabled();
+                    }
+                    await totalBurnTextProcess();
+                }
+                catch (error)
+                {
+                    console.log("Error at buttonPobAddRemove.addEventListener() - click : ", error);
                 }
             });
 
@@ -1477,6 +1543,7 @@ $(window).bind("load", function() {
                         buttonBeeAvail.setAttribute("disabled", "disabled");
                         buttonAddBeeAvail.setAttribute("disabled", "disabled");
                         beeAddSvg.removeAttribute("style"); 
+                        buttonBeeAddRemove.setAttribute("disabled", "disabled");
                     }
                     await removeBeeJson();
                 }
@@ -1516,11 +1583,13 @@ $(window).bind("load", function() {
                         {
                             buttonAddBeeAvail.removeAttribute("disabled");
                             beeAddSvg.removeAttribute("style");
+                            buttonBeeAddRemove.setAttribute("disabled", "disabled");
                         }
                         else
                         {
                             buttonAddBeeAvail.setAttribute("disabled", "disabled");
                             beeAddSvg.removeAttribute("style");
+                            buttonBeeAddRemove.setAttribute("disabled", "disabled");
                         }
                     }
 
@@ -1530,11 +1599,13 @@ $(window).bind("load", function() {
                         {
                             buttonAddBeeAvail.removeAttribute("disabled");
                             beeAddSvg.removeAttribute("style");
+                            buttonBeeAddRemove.setAttribute("disabled", "disabled");
                         }
                         else
                         {
                             buttonAddBeeAvail.setAttribute("disabled", "disabled");
                             beeAddSvg.removeAttribute("style");
+                            buttonBeeAddRemove.setAttribute("disabled", "disabled");
                         }
                     }
                 }
@@ -1553,11 +1624,13 @@ $(window).bind("load", function() {
                         {
                             buttonAddBeeAvail.removeAttribute("disabled");
                             beeAddSvg.removeAttribute("style");
+                            buttonBeeAddRemove.setAttribute("disabled", "disabled");
                         }
                         else
                         {
                             buttonAddBeeAvail.setAttribute("disabled", "disabled");
                             beeAddSvg.removeAttribute("style");
+                            buttonBeeAddRemove.setAttribute("disabled", "disabled");
                         }
                     }
 
@@ -1567,11 +1640,13 @@ $(window).bind("load", function() {
                         {
                             buttonAddBeeAvail.removeAttribute("disabled");
                             beeAddSvg.removeAttribute("style");
+                            buttonBeeAddRemove.setAttribute("disabled", "disabled");
                         }
                         else
                         {
                             buttonAddBeeAvail.setAttribute("disabled", "disabled");
                             beeAddSvg.removeAttribute("style");
+                            buttonBeeAddRemove.setAttribute("disabled", "disabled");
                         }
                     }
                 }
@@ -1589,6 +1664,7 @@ $(window).bind("load", function() {
                     {
                         buttonAddBeeAvail.removeAttribute("disabled");
                         beeAddSvg.removeAttribute("style");
+                        buttonBeeAddRemove.setAttribute("disabled", "disabled");
                     }
                     else
                     {
@@ -1600,6 +1676,7 @@ $(window).bind("load", function() {
                         buttonBeeAvail.setAttribute("disabled", "disabled");
                         buttonAddBeeAvail.setAttribute("disabled", "disabled");
                         beeAddSvg.removeAttribute("style"); 
+                        buttonBeeAddRemove.setAttribute("disabled", "disabled");
                     }
                 }
                 catch (error)
@@ -1647,6 +1724,7 @@ $(window).bind("load", function() {
                 try
                 {
                     pobAddSvg.style.fill = "#00e065";
+                    buttonPobAddRemove.removeAttribute("disabled");
                     buttonAddPobAvail.setAttribute("disabled", "disabled");
                     await processPobJson(usernameInput.value, inputPobAvail.value, buttonPobAvail.value, postLinkField.value); 
                     console.log("CALLERJSON : ", CALLERJSON); 
@@ -1656,6 +1734,29 @@ $(window).bind("load", function() {
                 catch (error)
                 {
                     console.log("Error at buttonAddPobAvail.addEventListener() - click : ", error);
+                }
+            });
+
+            buttonPobAddRemove.addEventListener("click", async function() {
+                try
+                {
+                    pobAddSvg.removeAttribute("style");
+                    // Remove the JSON object with type 'pob' from CALLERJSON
+                    CALLERJSON = CALLERJSON.filter(function(json) {
+                        return json.type !== "pob";
+                    });
+                    buttonAddPobAvail.removeAttribute("disabled");
+                    buttonPobAddRemove.setAttribute("disabled", "disabled");
+                    console.log("CALLERJSON : ", CALLERJSON);
+                    if(CALLERJSON.length <= 0)
+                    {
+                        await burnButtonDisabled();
+                    } 
+                    await totalBurnTextProcess();
+                }
+                catch (error)
+                {
+                    console.log("Error at buttonPobAddRemove.addEventListener() - click : ", error);
                 }
             });
 
@@ -1679,6 +1780,7 @@ $(window).bind("load", function() {
                         buttonPobAvail.setAttribute("disabled", "disabled");
                         buttonAddPobAvail.setAttribute("disabled", "disabled");
                         pobAddSvg.removeAttribute("style"); 
+                        buttonPobAddRemove.setAttribute("disabled", "disabled");
                     }
                     await removePobJson();
                 }
@@ -1718,11 +1820,13 @@ $(window).bind("load", function() {
                         {
                             buttonAddPobAvail.removeAttribute("disabled");
                             pobAddSvg.removeAttribute("style");
+                            buttonPobAddRemove.setAttribute("disabled", "disabled");
                         }
                         else
                         {
                             buttonAddPobAvail.setAttribute("disabled", "disabled");
                             pobAddSvg.removeAttribute("style");
+                            buttonPobAddRemove.setAttribute("disabled", "disabled");
                         }
                     }
 
@@ -1732,11 +1836,13 @@ $(window).bind("load", function() {
                         {
                             buttonAddPobAvail.removeAttribute("disabled");
                             pobAddSvg.removeAttribute("style");
+                            buttonPobAddRemove.setAttribute("disabled", "disabled");
                         }
                         else
                         {
                             buttonAddPobAvail.setAttribute("disabled", "disabled");
                             pobAddSvg.removeAttribute("style");
+                            buttonPobAddRemove.setAttribute("disabled", "disabled");
                         }
                     }
                 }
@@ -1755,11 +1861,13 @@ $(window).bind("load", function() {
                         {
                             buttonAddPobAvail.removeAttribute("disabled");
                             pobAddSvg.removeAttribute("style");
+                            buttonPobAddRemove.setAttribute("disabled", "disabled");
                         }
                         else
                         {
                             buttonAddPobAvail.setAttribute("disabled", "disabled");
                             pobAddSvg.removeAttribute("style");
+                            buttonPobAddRemove.setAttribute("disabled", "disabled");
                         }
                     }
 
@@ -1769,11 +1877,13 @@ $(window).bind("load", function() {
                         {
                             buttonAddPobAvail.removeAttribute("disabled");
                             pobAddSvg.removeAttribute("style");
+                            buttonPobAddRemove.setAttribute("disabled", "disabled");
                         }
                         else
                         {
                             buttonAddPobAvail.setAttribute("disabled", "disabled");
                             pobAddSvg.removeAttribute("style");
+                            buttonPobAddRemove.setAttribute("disabled", "disabled");
                         }
                     }
                 }
@@ -1791,6 +1901,7 @@ $(window).bind("load", function() {
                     {
                         buttonAddPobAvail.removeAttribute("disabled");
                         pobAddSvg.removeAttribute("style");
+                        buttonPobAddRemove.setAttribute("disabled", "disabled");
                     }
                     else
                     {
@@ -1802,6 +1913,7 @@ $(window).bind("load", function() {
                         buttonPobAvail.setAttribute("disabled", "disabled");
                         buttonAddPobAvail.setAttribute("disabled", "disabled");
                         pobAddSvg.removeAttribute("style"); 
+                        buttonPobAddRemove.setAttribute("disabled", "disabled");
                     }
                 }
                 catch (error)
@@ -2069,6 +2181,7 @@ $(window).bind("load", function() {
                     var heliosLastPrice = 0.0, heliosLastDayPrice = 0.0, heliosAvgPrice = 0.0;
                     var athonLastPrice = 0.0, athonLastDayPrice = 0.0, athonAvgPrice = 0.0;
                     $("#total_burn").text("0");
+                    $("#burn_usd_val").text("$ 0");
                     for (const json of CALLERJSON) 
                     {
                         // Check the type of the JSON element
