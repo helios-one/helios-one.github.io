@@ -328,6 +328,8 @@ $(window).bind("load", function() {
     const MINHELIOS = 5;
     const MINATH = 10;
 
+    const TIMEOUT = 8000;
+
     var CALLERJSON = [];
 
     async function processAll () {
@@ -1203,15 +1205,107 @@ $(window).bind("load", function() {
             }); 
             
             buttonBurnTokens.addEventListener("click", async function() {
-                try
+                try 
                 {
-
-                }
-                catch (error)
+                    var handShakeStatus = await keyChainAvailability();
+                    if (handShakeStatus == true) 
+                    {
+                        $("#loading").removeClass("d-none");
+                        $("#loading").removeClass("loading-style");
+                        $("#status").text("Please wait...");
+                        await sendTransactions();
+                    } 
+                    else 
+                    {
+                        $("#status").text("No method of transaction available. Install Keychain.");
+                    }
+                } 
+                catch (error) 
                 {
-                    console.log("Error at buttonBurnTokens.addEventListener() - click : ", error);
-                }
+                    console.log("Error at buttonBurnTokens.addEventListener() - click:", error);
+                } 
             });
+              
+            async function sendTransactions() {
+                try 
+                {
+                    var callUser = usernameInput.value;
+                    $("#loading").removeClass("d-none");
+                    $("#loading").removeClass("loading-style");
+                    $("#status").text("Confirm the transaction through Keychain.");
+                    const customJsons = CALLERJSON.map((item) => {
+                        var sendTo = "";
+                        if (item.type == "surf") 
+                        {
+                            sendTo = "helios.burn"; 
+                        } 
+                        else if (item.type == "bee") 
+                        {
+                            sendTo = "helios.bee";
+                        } 
+                        else if (item.type == "pob") 
+                        {
+                            sendTo = "helios.pob";
+                        }
+                
+                        return {
+                            contractName: 'tokens',
+                            contractAction: 'transfer',
+                            contractPayload: {
+                                to: sendTo,
+                                symbol: item.symbol,
+                                quantity: item.input,
+                                memo: item.link
+                            }
+                        };
+                    });
+                    const customJsonArray = JSON.stringify(customJsons);
+                
+                    var myFuncAsync = (customJsonArray) => {
+                        return new Promise((resolve, reject) => {
+                            hive_keychain.requestCustomJson(callUser, "ssc-mainnet-hive", "Active", customJsonArray, "Send Tokens", (result, error) => {
+                                if (error) 
+                                {
+                                    reject(new Error(error));
+                                } 
+                                else 
+                                {
+                                    resolve(result);
+                                }
+                            });
+                        });
+                    }
+                
+                    var asyncData = await myFuncAsync(customJsonArray);
+                    if (asyncData["success"] == true) 
+                    {
+                        $("#loading").removeClass("d-none");
+                        $("#loading").addClass("loading-style");
+                        $("#status").text("Successfully Sent To Burn!");
+                        $("#status").addClass("text-success");
+                        await timeout(TIMEOUT);
+                        buttonBurnTokens.setAttribute("disabled", "disabled");
+                        $("#status").text("");
+                        $("#status").removeClass("text-success");
+                        $("#loading").addClass("d-none");
+                        $("#loading").removeClass("loading-style");
+                    } 
+                    else 
+                    {
+                        $("#loading").removeClass("d-none");
+                        $("#loading").removeClass("loading-style");                        
+                        $("#status").text("Transaction failed, Please try again.");
+                        await timeout(TIMEOUT);
+                        $("#status").text("");
+                        $("#loading").addClass("d-none");
+                        $("#loading").removeClass("loading-style");
+                    }
+                } 
+                catch (error) 
+                {
+                    console.log("Error at sendTransactions():", error);
+                }
+            };  
 
             // Surf Validations Start Here
 
@@ -2244,6 +2338,29 @@ $(window).bind("load", function() {
                     console.log("Error at totalBurnTextProcess() : ", error);
                 }
             }; 
+
+            async function keyChainAvailability() {
+                try 
+                {
+                    function requestHandshakeAsync() {
+                        return new Promise((resolve, reject) => {
+                            hive_keychain.requestHandshake(() => {
+                                console.log('Handshake received!');
+                                resolve(); // Resolve the promise when the handshake is complete
+                            });
+                        });
+                    }                
+                    await requestHandshakeAsync();
+                    return true;
+                } 
+                catch (error) 
+                {
+                    console.log('Error at keyChainAvailability():', error);
+                    return false;
+                }
+            };
+            
+            
         }
         catch (error)
         {
@@ -2638,7 +2755,11 @@ $(window).bind("load", function() {
         }
     };
 
-    processAndSaveHivePrice();      
+    processAndSaveHivePrice(); 
+
+    function timeout(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    };
 });
 
 async function getSelectedEndpoint() {

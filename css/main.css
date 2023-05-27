@@ -853,5 +853,9 @@ tr:hover .node-url {
     justify-content: center;
     align-items: center;
 }
+
+.loading-style {
+    color: #00e065 !important;
+}
   
   
