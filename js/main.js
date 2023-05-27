@@ -769,7 +769,13 @@ $(window).bind("load", function() {
             {
                 const balHelios = await getTokenBalance(account, "HELIOS");
                 const marketHelios = await getMarketInfo(["HELIOS"]);                
-                var hiveUSD = await getHiveUSD();                                
+                
+                const savedHivePrice = localStorage.getItem("hivePrice");
+                var hiveUSD = parseFloat(savedHivePrice);                
+                if (hiveUSD <= 0 || isNaN(hiveUSD)) 
+                {
+                    hiveUSD = await getHiveUSD();
+                }                                
                 
                 if (balHelios.length > 0 && marketHelios.length > 0 && hiveUSD > 0) 
                 {
@@ -823,7 +829,13 @@ $(window).bind("load", function() {
             {
                 const balAthon = await getTokenBalance(account, "ATH");
                 const marketAthon = await getMarketInfo(["ATH"]);
-                var hiveUSD = await getHiveUSD();                                
+                
+                const savedHivePrice = localStorage.getItem("hivePrice");
+                var hiveUSD = parseFloat(savedHivePrice);                
+                if (hiveUSD <= 0 || isNaN(hiveUSD)) 
+                {
+                    hiveUSD = await getHiveUSD();
+                }                                
                 
                 if (balAthon.length > 0 && marketAthon.length > 0 && hiveUSD > 0) 
                 {
@@ -902,16 +914,16 @@ $(window).bind("load", function() {
         var hiveUSD = 0.0;
         try
         {
-            hiveUSD = await getCoinGeckoPrice();
+            hiveUSD = await getCryptoComparePrice();
             if(hiveUSD <= 0)
             {
-                hiveUSD = await getMessariPrice();
+                hiveUSD = await getCoinGeckoPrice();
                 if(hiveUSD <= 0)
                 {
                     hiveUSD = await getCoinCapPrice();
                     if(hiveUSD <= 0)
                     {
-                        hiveUSD = await getCryptoComparePrice();
+                        hiveUSD = await getMessariPrice();
                     }
                 }
             }
@@ -929,7 +941,7 @@ $(window).bind("load", function() {
         try
         {
             const { data } = await axios.get(hiveCoinGeckoAPI);
-            hPrice = data.hive.usd;
+            hPrice = data.hive.usd;            
             return hPrice;
         }
         catch (error)
@@ -944,7 +956,7 @@ $(window).bind("load", function() {
         try
         {
             const { data } = await axios.get(hiveMessariAPI);
-            hPrice = data.data.market_data.price_usd;
+            hPrice = data.data.market_data.price_usd;            
             return hPrice;
         }
         catch (error)
@@ -959,7 +971,7 @@ $(window).bind("load", function() {
         try
         {
             const { data } = await axios.get(hiveCoinCapAPI);
-            hPrice = data.data.priceUsd;
+            hPrice = data.data.priceUsd;            
             return hPrice;
         }
         catch (error)
@@ -974,7 +986,7 @@ $(window).bind("load", function() {
         try
         {
             const { data } = await axios.get(hiveCryptoCompareAPI);
-            hPrice = data.USD;
+            hPrice = data.USD;            
             return hPrice;
         }
         catch (error)
@@ -1062,7 +1074,14 @@ $(window).bind("load", function() {
         try
         {
             var marketInfo = await getMarketInfo(["HELIOS", "ATH"]);
-            var hiveUSD = await getHiveUSD();            
+
+            const savedHivePrice = localStorage.getItem("hivePrice");
+            var hiveUSD = parseFloat(savedHivePrice);                
+            if (hiveUSD <= 0 || isNaN(hiveUSD)) 
+            {
+                hiveUSD = await getHiveUSD();
+            }
+
             if(marketInfo.length > 0)
             {
                 var helios_price = 0.0, helios_value = 0.0, helios_vol = 0.0, helios_change = 0.0;            
@@ -1075,7 +1094,7 @@ $(window).bind("load", function() {
                 }
 
                 var athon_price = 0.0, athon_value = 0.0, athon_vol = 0.0, athon_change = 0.0;            
-                if(marketInfo[0].symbol == "ATH")
+                if(marketInfo[1].symbol == "ATH")
                 {
                     athon_price = parseFloat(marketInfo[1].lastPrice) || 0.0;
                     athon_value = parseFloat(marketInfo[1].lastPrice * hiveUSD) || 0.0;
@@ -1145,14 +1164,20 @@ $(window).bind("load", function() {
             const inputPobAvail = document.getElementById("input-pob-avail");
             const buttonPobAvail = document.getElementById("button-pob-avail");
             const buttonAddPobAvail = document.getElementById("add-pob-avail");
-            const pobAddSvg = document.getElementById("pob-add-svg");            
+            const pobAddSvg = document.getElementById("pob-add-svg");
+            
+            const buttonBurnTokens = document.getElementById("burn-token");
 
             usernameInput.addEventListener("input", async function() {
                 try
                 {                    
                     updateBalance();
                     await removeSurfJson();                                                             
-                    await updateSurfElements();                                        
+                    await updateSurfElements(); 
+                    await removeBeeJson();                                                             
+                    await updateBeeElements(); 
+                    await removePobJson();                                                             
+                    await updatePobElements();                                       
                 }
                 catch (error)
                 {
@@ -1172,7 +1197,18 @@ $(window).bind("load", function() {
                 {
                     console.log("Error at postLinkField.addEventListener() - input : ", error);
                 }
-            });            
+            }); 
+            
+            buttonBurnTokens.addEventListener("click", async function() {
+                try
+                {
+
+                }
+                catch (error)
+                {
+                    console.log("Error at buttonBurnTokens.addEventListener() - click : ", error);
+                }
+            });
 
             // Surf Validations Start Here
 
@@ -1213,6 +1249,7 @@ $(window).bind("load", function() {
                     surfAddSvg.style.fill = "#00e065";
                     buttonAddSurfAvail.setAttribute("disabled", "disabled");
                     await processSurfJson(usernameInput.value, inputSurfAvail.value, buttonSurfAvail.value, postLinkField.value); 
+                    await totalBurnTextProcess();
                 }
                 catch (error)
                 {
@@ -1383,6 +1420,8 @@ $(window).bind("load", function() {
                     
                     inputVal = parseFloat(inputVal) || 0.0;
                     await addBeeButton(inputVal, buttonAddBeeAvail, beeAddSvg);
+
+                    await removeBeeJson();
                 }
                 catch (error)
                 {
@@ -1396,6 +1435,7 @@ $(window).bind("load", function() {
                     var inputVal = inputBeeAvail.value;
                     var selectedOption = buttonBeeAvail.value;
                     await selectBeeSymbol(inputVal, selectedOption, buttonAddBeeAvail, beeAddSvg);
+                    await removeBeeJson();
                 }
                 catch (error)
                 {
@@ -1403,11 +1443,13 @@ $(window).bind("load", function() {
                 }
             });
 
-            buttonAddBeeAvail.addEventListener("click", function() {
+            buttonAddBeeAvail.addEventListener("click", async function() {
                 try
                 {
                     beeAddSvg.style.fill = "#00e065";
                     buttonAddBeeAvail.setAttribute("disabled", "disabled");
+                    await processBeeJson(usernameInput.value, inputBeeAvail.value, buttonBeeAvail.value, postLinkField.value);
+                    await totalBurnTextProcess();                    
                 }
                 catch (error)
                 {
@@ -1436,6 +1478,7 @@ $(window).bind("load", function() {
                         buttonAddBeeAvail.setAttribute("disabled", "disabled");
                         beeAddSvg.removeAttribute("style"); 
                     }
+                    await removeBeeJson();
                 }
                 catch (error)
                 {
@@ -1538,6 +1581,33 @@ $(window).bind("load", function() {
                 }
             };
 
+            async function updateBeeElements () {
+                try
+                {
+                    var postInfo = await postURL(postLinkField.value);                    
+                    if(postInfo[0].surfStatus == true)
+                    {
+                        buttonAddBeeAvail.removeAttribute("disabled");
+                        beeAddSvg.removeAttribute("style");
+                    }
+                    else
+                    {
+                        beeSvg.removeAttribute("style");
+                        beeAvail.removeAttribute("style");
+                        inputBeeAvail.value = "";  // Remove the text value
+                        inputBeeAvail.setAttribute("disabled", "disabled");
+                        buttonBeeAvail.value = "HELIOS";
+                        buttonBeeAvail.setAttribute("disabled", "disabled");
+                        buttonAddBeeAvail.setAttribute("disabled", "disabled");
+                        beeAddSvg.removeAttribute("style"); 
+                    }
+                }
+                catch (error)
+                {
+                    console.log("Error at updateBeeElements() : ", error);
+                }
+            };
+
             // Bee Validations End Here
 
             // Pob Validations Start Here
@@ -1550,6 +1620,8 @@ $(window).bind("load", function() {
                     
                     inputVal = parseFloat(inputVal) || 0.0;
                     await addPobButton(inputVal, buttonAddPobAvail, pobAddSvg);
+
+                    await removePobJson();
                 }
                 catch (error)
                 {
@@ -1563,6 +1635,7 @@ $(window).bind("load", function() {
                     var inputVal = inputPobAvail.value;
                     var selectedOption = buttonPobAvail.value;
                     await selectPobSymbol(inputVal, selectedOption, buttonAddPobAvail, pobAddSvg);
+                    await removePobJson();
                 }
                 catch (error)
                 {
@@ -1570,11 +1643,15 @@ $(window).bind("load", function() {
                 }
             });
 
-            buttonAddPobAvail.addEventListener("click", function() {
+            buttonAddPobAvail.addEventListener("click", async function() {
                 try
                 {
                     pobAddSvg.style.fill = "#00e065";
                     buttonAddPobAvail.setAttribute("disabled", "disabled");
+                    await processPobJson(usernameInput.value, inputPobAvail.value, buttonPobAvail.value, postLinkField.value); 
+                    console.log("CALLERJSON : ", CALLERJSON); 
+                    await burnButtonInitiate();
+                    await totalBurnTextProcess();                  
                 }
                 catch (error)
                 {
@@ -1603,6 +1680,7 @@ $(window).bind("load", function() {
                         buttonAddPobAvail.setAttribute("disabled", "disabled");
                         pobAddSvg.removeAttribute("style"); 
                     }
+                    await removePobJson();
                 }
                 catch (error)
                 {
@@ -1705,6 +1783,33 @@ $(window).bind("load", function() {
                 }
             };
 
+            async function updatePobElements () {
+                try
+                {
+                    var postInfo = await postURL(postLinkField.value);                    
+                    if(postInfo[0].surfStatus == true)
+                    {
+                        buttonAddPobAvail.removeAttribute("disabled");
+                        pobAddSvg.removeAttribute("style");
+                    }
+                    else
+                    {
+                        pobSvg.removeAttribute("style");
+                        pobAvail.removeAttribute("style");
+                        inputPobAvail.value = "";  // Remove the text value
+                        inputPobAvail.setAttribute("disabled", "disabled");
+                        buttonPobAvail.value = "HELIOS";
+                        buttonPobAvail.setAttribute("disabled", "disabled");
+                        buttonAddPobAvail.setAttribute("disabled", "disabled");
+                        pobAddSvg.removeAttribute("style"); 
+                    }
+                }
+                catch (error)
+                {
+                    console.log("Error at updatePobElements() : ", error);
+                }
+            };
+
             // Pob Validations End Here
 
             // Add To JSON
@@ -1720,7 +1825,7 @@ $(window).bind("load", function() {
                                 type: "surf",
                                 username: userName,
                                 input: inputVal,
-                                sysmbol: tokenSymbol,
+                                symbol: tokenSymbol,
                                 link: permLink  
                             };
                         } 
@@ -1742,7 +1847,7 @@ $(window).bind("load", function() {
                             type: "surf",
                             username: userName,
                             input: inputVal,
-                            sysmbol: tokenSymbol,
+                            symbol: tokenSymbol,
                             link: permLink  
                         };
                         updatedCallerJson.push(newJson);
@@ -1764,12 +1869,268 @@ $(window).bind("load", function() {
                     CALLERJSON = CALLERJSON.filter(function(json) {
                         return json.type !== "surf";
                     });
+
+                    await burnButtonDisabled();
                 }
                 catch (error)
                 {
                     console.log("Error at removeSurfJson() : ", error);
                 }
             };
+
+            async function processBeeJson (userName, inputVal, tokenSymbol, permLink) {
+                try
+                {
+                    var updatedCallerJson = CALLERJSON.map(function(json) {
+                        if (json.type === "bee") 
+                        {
+                            // Replace the existing JSON object with a new one
+                            return { 
+                                type: "bee",
+                                username: userName,
+                                input: inputVal,
+                                symbol: tokenSymbol,
+                                link: permLink  
+                            };
+                        } 
+                        else 
+                        {
+                            // Keep the original JSON object
+                            return json;
+                        }
+                    });
+
+                    // Check if there was a JSON object with type 'surf' in CALLERJSON
+                    var existingJsonIndex = CALLERJSON.findIndex(function(json) {
+                        return json.type === "bee";
+                    });
+
+                    // If no existing JSON object was found, add a new one
+                    if (existingJsonIndex === -1) {
+                        var newJson ={ 
+                            type: "bee",
+                            username: userName,
+                            input: inputVal,
+                            symbol: tokenSymbol,
+                            link: permLink  
+                        };
+                        updatedCallerJson.push(newJson);
+                    }
+
+                    // Assign the updated array back to CALLERJSON
+                    CALLERJSON = updatedCallerJson;
+                }
+                catch (error)
+                {
+                    console.log("Error at processBeeJson() : ", error);
+                }
+            };
+
+            async function removeBeeJson () {
+                try
+                {
+                    // Remove the JSON object with type 'surf' from CALLERJSON
+                    CALLERJSON = CALLERJSON.filter(function(json) {
+                        return json.type !== "bee";
+                    });
+
+                    await burnButtonDisabled();
+                }
+                catch (error)
+                {
+                    console.log("Error at removeBeeJson() : ", error);
+                }
+            };
+
+            async function processPobJson (userName, inputVal, tokenSymbol, permLink) {
+                try
+                {
+                    var updatedCallerJson = CALLERJSON.map(function(json) {
+                        if (json.type === "pob") 
+                        {
+                            // Replace the existing JSON object with a new one
+                            return { 
+                                type: "pob",
+                                username: userName,
+                                input: inputVal,
+                                symbol: tokenSymbol,
+                                link: permLink  
+                            };
+                        } 
+                        else 
+                        {
+                            // Keep the original JSON object
+                            return json;
+                        }
+                    });
+
+                    // Check if there was a JSON object with type 'surf' in CALLERJSON
+                    var existingJsonIndex = CALLERJSON.findIndex(function(json) {
+                        return json.type === "pob";
+                    });
+
+                    // If no existing JSON object was found, add a new one
+                    if (existingJsonIndex === -1) {
+                        var newJson ={ 
+                            type: "pob",
+                            username: userName,
+                            input: inputVal,
+                            symbol: tokenSymbol,
+                            link: permLink  
+                        };
+                        updatedCallerJson.push(newJson);
+                    }
+
+                    // Assign the updated array back to CALLERJSON
+                    CALLERJSON = updatedCallerJson;
+                }
+                catch (error)
+                {
+                    console.log("Error at processPobJson() : ", error);
+                }
+            };
+
+            async function removePobJson () {
+                try
+                {
+                    // Remove the JSON object with type 'surf' from CALLERJSON
+                    CALLERJSON = CALLERJSON.filter(function(json) {
+                        return json.type !== "pob";
+                    });
+
+                    await burnButtonDisabled();
+                }
+                catch (error)
+                {
+                    console.log("Error at removePobJson() : ", error);
+                }
+            };
+
+            async function burnButtonInitiate () {
+                try
+                {
+                    var heliosAmount = 0.0, athonAmount = 0.0;
+                    var heliosTotal = 0.0, athonTotal = 0.0;
+                    var accStatus = await getAccountInfo(usernameInput.value);
+                    if(accStatus == true)
+                    {
+                        const balHelios = await getTokenBalance(usernameInput.value, "HELIOS");                        
+                        if(balHelios.length > 0)
+                        {
+                            heliosAmount = parseFloat(balHelios[0].balance) || 0.0;                            
+                        }
+
+                        const balAthon = await getTokenBalance(usernameInput.value, "ATH");                        
+                        if(balAthon.length > 0)
+                        {
+                            athonAmount = parseFloat(balAthon[0].balance) || 0.0;
+                        }
+
+                        // Iterate over the CALLERJSON array
+                        for (const json of CALLERJSON) 
+                        {
+                            // Check the type of the JSON element
+                            if (json.symbol === "HELIOS") 
+                            {
+                                heliosTotal += parseFloat(json.input) || 0.0;
+                            } 
+                            else if (json.symbol === "ATHON") 
+                            {
+                                athonTotal += parseFloat(json.input) || 0.0;
+                            } 
+                        }
+
+                        if(heliosAmount >= heliosTotal && athonAmount >= athonTotal)
+                        {
+                            buttonBurnTokens.removeAttribute("disabled");
+                        }
+                        else
+                        {
+                            await burnButtonDisabled();
+                        }
+                    }
+                }
+                catch (error)
+                {
+                    console.log("Error at burnButtonInitiate() : ", error);
+                }
+            };
+
+            async function burnButtonDisabled () {
+                buttonBurnTokens.setAttribute("disabled", "disabled");
+                buttonBurnTokens.removeAttribute("style");
+            };
+
+            async function totalBurnTextProcess () {
+                try
+                {
+                    var heliosTotal = 0.0, athonTotal = 0.0;
+                    var estimateUSD = 0.0;
+                    var heliosLastPrice = 0.0, heliosLastDayPrice = 0.0, heliosAvgPrice = 0.0;
+                    var athonLastPrice = 0.0, athonLastDayPrice = 0.0, athonAvgPrice = 0.0;
+                    $("#total_burn").text("0");
+                    for (const json of CALLERJSON) 
+                    {
+                        // Check the type of the JSON element
+                        if (json.symbol === "HELIOS") 
+                        {
+                            heliosTotal += parseFloat(json.input) || 0.0;
+                        } 
+                        else if (json.symbol === "ATHON") 
+                        {
+                            athonTotal += parseFloat(json.input) || 0.0;
+                        } 
+                    }
+
+                    var marketInfo = await getMarketInfo(["HELIOS", "ATH"]);
+                    if(marketInfo.length > 0)
+                    {
+                        if(marketInfo[0].symbol == "HELIOS")
+                        {
+                            heliosLastPrice = parseFloat(marketInfo[0].lastPrice) || 0.0;
+                            heliosLastDayPrice = parseFloat(marketInfo[0].lastDayPrice) || 0.0;
+                            heliosAvgPrice = dec((heliosLastPrice + heliosLastDayPrice) / 2);
+                        }
+
+                        if(marketInfo[1].symbol == "ATH")
+                        {
+                            athonLastPrice = parseFloat(marketInfo[1].lastPrice) || 0.0;
+                            athonLastDayPrice = parseFloat(marketInfo[1].lastDayPrice) || 0.0;
+                            athonAvgPrice = dec((athonLastPrice + athonLastDayPrice) / 2);
+                        }
+                    }
+
+                    const savedHivePrice = localStorage.getItem("hivePrice");
+                    var hiveUSD = parseFloat(savedHivePrice);                
+                    if (hiveUSD <= 0 || isNaN(hiveUSD)) 
+                    {
+                        hiveUSD = await getHiveUSD();
+                    }
+
+                    if (heliosTotal > 0.0 && athonTotal <= 0.0) 
+                    {
+                        estimateUSD = parseFloat(heliosTotal * heliosAvgPrice * hiveUSD) || 0.0;
+                        $("#total_burn").text(heliosTotal + " HELIOS");
+                        $("#burn_usd_val").text("$ " + estimateUSD.toFixed(3));
+                    } 
+                    else if (athonTotal > 0.0 && heliosTotal <= 0.0) 
+                    {
+                        estimateUSD = parseFloat(athonTotal * athonAvgPrice * hiveUSD) || 0.0;
+                        $("#total_burn").text(athonTotal + " ATHON");
+                        $("#burn_usd_val").text("$ " + estimateUSD.toFixed(3));
+                    } 
+                    else if (heliosTotal > 0.0 && athonTotal > 0.0) 
+                    {
+                        estimateUSD = parseFloat(((heliosTotal * heliosAvgPrice) + (athonTotal * athonAvgPrice)) * hiveUSD) || 0.0;
+                        $("#total_burn").text(heliosTotal + " HELIOS & " + athonTotal + " ATHON");
+                        $("#burn_usd_val").text("$ " + estimateUSD.toFixed(3));
+                    }                    
+                }
+                catch (error)
+                {
+                    console.log("Error at totalBurnTextProcess() : ", error);
+                }
+            }; 
         }
         catch (error)
         {
@@ -1940,7 +2301,7 @@ $(window).bind("load", function() {
         {            
             var accStatus = await getAccountInfo(user);
             if(accStatus == true)
-            {                     
+            {                 
                 var balHelios = await getHeliosBalances(user);               
                 $("#helios").text(balHelios[0].heliosVal.toFixed(3));
                 $("#helios_bal_value").text(balHelios[0].hiveVal);
@@ -1980,25 +2341,15 @@ $(window).bind("load", function() {
     };    
 
     $("#swap").click(async function () {
-
         $("#swap").attr("disabled", "true");
-
         $("#loading").removeClass("d-none");
-
         $("#status").text("Please Wait...");
-
         await refresh();
-
         await updateBalance();
 
         updateBurn(async function(canBurn, amount, currency, post_link) {
-
             if (canBurn) {
-
                 $("#swap").attr("disabled", "true");
-
-
-
                 let post = false;
 
                 try {
@@ -2130,6 +2481,51 @@ $(window).bind("load", function() {
         });
 
     });
+
+    async function processAndSaveHivePrice() {
+        try
+        {
+            async function saveHivePrice(hiveUSD) {
+                try 
+                {
+                    // Save the hiveUSD value to Local Storage
+                    localStorage.setItem("hivePrice", hiveUSD);
+                    console.log("Hive price saved successfully : ", hiveUSD);
+                } 
+                catch (error) 
+                {
+                    console.log("Error at saveHivePrice() : ", error);
+                }
+            };
+        
+            async function processAndSave() {
+                try 
+                {
+                    const hiveUSD = await getHiveUSD();                    
+                    if(hiveUSD > 0.0)
+                    {
+                        await saveHivePrice(hiveUSD);
+                    }
+                } 
+                catch (error) 
+                {
+                    console.log("Error at processAndSave() : ", error);
+                }
+            };
+        
+            // Process and save the hiveUSD price initially
+            await processAndSave();
+        
+            // Schedule the processAndSave function to run every 5 minutes
+            setInterval(processAndSave, 5 * 60 * 1000);
+        }
+        catch (error)
+        {
+            console.log("Error at processAndSaveHivePrice() : ", error);
+        }
+    };
+
+    processAndSaveHivePrice();      
 });
 
 async function getSelectedEndpoint() {

@@ -437,6 +437,11 @@ a {
     box-shadow: 0 0 3px 3px #ffae00 !important; /* Add a small blue box shadow when the button is active */
 }
 
+.btn-burn:hover {
+    background-color: #ffae00 !important;
+    transition: background-color 0.5s ease-in-out;
+}
+
 .link-button-align {
     vertical-align: middle;
 }
@@ -832,5 +837,9 @@ tr:hover .node-url {
 #popup-button-engine:hover {
     color: #00e065;
     transition: fill 0.3s ease;
+}
+
+.text-data-alignment {
+    width: 100%;
 }
 
