@@ -1184,7 +1184,8 @@ $(window).bind("load", function() {
                     await removeBeeJson();                                                             
                     await updateBeeElements(); 
                     await removePobJson();                                                             
-                    await updatePobElements();                                       
+                    await updatePobElements();
+                    await totalBurnTextInitiate();                                       
                 }
                 catch (error)
                 {
@@ -1236,18 +1237,18 @@ $(window).bind("load", function() {
                     $("#loading").removeClass("loading-style");
                     $("#status").text("Confirm the transaction through Keychain.");
                     const customJsons = CALLERJSON.map((item) => {
-                        var sendTo = "";
+                        var sendTo = "asimo";
                         if (item.type == "surf") 
                         {
-                            sendTo = "helios.burn"; 
+                            //sendTo = "helios.burn"; 
                         } 
                         else if (item.type == "bee") 
                         {
-                            sendTo = "helios.bee";
+                            //sendTo = "helios.bee";
                         } 
                         else if (item.type == "pob") 
                         {
-                            sendTo = "helios.pob";
+                            //sendTo = "helios.pob";
                         }
                 
                         return {
@@ -1291,6 +1292,15 @@ $(window).bind("load", function() {
                         $("#status").removeClass("text-success");
                         $("#loading").addClass("d-none");
                         $("#loading").removeClass("loading-style");
+
+                        updateBalance();
+                        await removeSurfJson();                                                             
+                        await updateSurfElements(); 
+                        await removeBeeJson();                                                             
+                        await updateBeeElements(); 
+                        await removePobJson();                                                             
+                        await updatePobElements();
+                        await totalBurnTextInitiate();
                     } 
                     else 
                     {
@@ -2383,6 +2393,18 @@ $(window).bind("load", function() {
                 }
             }; 
 
+            async function totalBurnTextInitiate () {
+                try
+                {
+                    $("#total_burn").text("0");
+                    $("#burn_usd_val").text("$ 0");
+                }
+                catch (error)
+                {
+                    console.log("Error at totalBurnTextInitiate() : ", error);
+                }
+            };
+
             async function keyChainAvailability() {
                 try 
                 {
@@ -2402,8 +2424,7 @@ $(window).bind("load", function() {
                     console.log('Error at keyChainAvailability():', error);
                     return false;
                 }
-            };
-            
+            };          
             
         }
         catch (error)
